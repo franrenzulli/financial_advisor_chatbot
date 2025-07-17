@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend 
+    ports:
+      - "8501:8501" # Default Streamlit port
+    depends_on:
+      - backend
+    environment:
+      # This assumes your frontend needs to know the backend's address
+      # The backend service will be reachable at http://backend:8000 from within the Docker network
+      BACKEND_URL: http://backend:8000
+
+  backend:
+    build: ./backend 
+    ports:
+      - "8000:8000" # FastAPI default port
+    depends_on:
+      - vector_db # Backend needs the vector_db to be up
+    environment:
+      # If your backend needs to connect to ChromaDB, specify its internal network address
+      CHROMADB_HOST: vector_db
+      CHROMADB_PORT: 8000 # Default ChromaDB port (check if this is correct for your ChromaDB setup)
+      # You might also need OpenAI API key here, or manage it securely elsewhere
+      OPENAI_API_KEY: ${OPENAI_API_KEY} # Best practice: use environment variable
+
+  vector_db:
+    image: chromadb/chroma # Example ChromaDB image, check their official Docker Hub for the latest
+    ports:
+      - "8000:8000" # Expose ChromaDB's API port
+    volumes:
+      - chromadb_data:/chroma/data # Persistent storage for your ChromaDB data
+
+volumes:
+  chromadb_data: # Define the named volume for persistence
