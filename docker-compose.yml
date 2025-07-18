@@ -28,7 +28,7 @@ services:
   vector_db:
     image: chromadb/chroma # Example ChromaDB image, check their official Docker Hub for the latest
     ports:
-      - "8000:8000" # Expose ChromaDB's API port
+      - "8001:8000" # Expose ChromaDB's API port
     volumes:
       - chromadb_data:/chroma/data # Persistent storage for your ChromaDB data
 
