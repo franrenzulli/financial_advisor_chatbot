@@ -1,4 +1,8 @@
-# Streamlit app (ARCHIVO DE PRUEBA, A MODIFICAR)
+# Streamlit app 
+
+import streamlit as st
+import requests  
+import os        
 
 # --- Función para aplicar estilos CSS dinámicos ---
 def apply_theme():
@@ -66,8 +70,12 @@ st.title("🤖 Mi Chatbot Básico")
 if st.button("✨ Toggle Dark/Light Mode"):
     toggle_theme()
 
-# Configuración de la API key de OpenAI
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+
+# Definimos la URL de tu backend FastAPI
+# 'backend' es el nombre del servicio en docker-compose, puerto 8000
+# La variable de entorno BACKEND_URL se pasa al contenedor frontend a través del docker-compose.yml
+BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
+API_ENDPOINT = f"{BACKEND_URL}/ask" # El endpoint /ask que definiste en tu FastAPI
 
 # Inicialización del historial de mensajes
 if "messages" not in st.session_state:
@@ -93,15 +101,30 @@ if prompt := st.chat_input("Escribe tu mensaje aquí..."):
     # Respuesta del asistente
     with st.chat_message("assistant"):
         with st.spinner("Pensando..."):
-            response_stream = openai.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": m["role"], "content": m["content"]}
-                    for m in st.session_state.messages
-                ],
-                stream=True,
-            )
-            response = st.write_stream(response_stream)
+            try:
+                # Realizar la llamada POST a tu API de FastAPI
+                # Enviamos la pregunta en formato JSON
+                response = requests.post(API_ENDPOINT, json={"question": prompt})
+                response.raise_for_status() # Lanza una excepción para códigos de error HTTP (ej. 404, 500)
+
+                api_response_data = response.json()
+                # Extraemos la respuesta del backend
+                assistant_response_content = api_response_data.get("answer", "Error: No se pudo obtener la respuesta del backend.")
+
+                st.markdown(assistant_response_content)
+
+            except requests.exceptions.ConnectionError:
+                assistant_response_content = "Lo siento, no pude conectar con el servidor backend. Asegúrate de que está funcionando."
+                st.error(assistant_response_content)
+            except requests.exceptions.Timeout:
+                assistant_response_content = "La conexión al backend tardó demasiado en responder."
+                st.error(assistant_response_content)
+            except requests.exceptions.RequestException as e:
+                assistant_response_content = f"Error al interactuar con el backend: {e}. Revisa los logs del backend."
+                st.error(assistant_response_content)
+            except Exception as e:
+                assistant_response_content = f"Ocurrió un error inesperado en el frontend: {e}"
+                st.error(assistant_response_content)
 
     # Guardar respuesta del asistente
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    st.session_state.messages.append({"role": "assistant", "content": assistant_response_content})
