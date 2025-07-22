@@ -8,3 +8,4 @@ sentence-transformers
 tiktoken
 pypdf
 pydantic
+ibm-watson-document-understanding
