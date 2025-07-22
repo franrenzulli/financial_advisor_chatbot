@@ -1,0 +1,11 @@
+boto3
+langchain
+chromadb
+PyMuPDF
+openai
+langchain-community
+langchain-openai
+langchain-chroma
+sentence-transformers
+pydantic
+

@@ -24,6 +24,20 @@ services:
       # You might also need OpenAI API key here, or manage it securely elsewhere
       OPENAI_API_KEY: ${OPENAI_API_KEY} # Best practice: use environment variable
 
+  ingestion:
+    build:
+      context: ./backend/llm
+      dockerfile: Dockerfile
+    container_name: ingestion-job
+    env_file: .env
+    volumes:
+      - ./backend/llm/vector-store:/app/vector-store
+      - ./backend/llm/ingestion:/app
+    working_dir: /app
+    depends_on:
+      - vector_db
+    command: ["python", "process_s3_documents.py"]
+
   vector_db:
     image: chromadb/chroma # Example ChromaDB image, check their official Docker Hub for the latest
     ports:
