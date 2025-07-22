@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 import os 
 
-# Importa la función de utilidad para convertir preguntas de usuarios en embeddings
-from utils import get_embedding_for_question
+# Importa la función para convertir preguntas de usuarios en embeddings
+from rag.embedder import get_embedding_for_question
 
 router = APIRouter()
 
