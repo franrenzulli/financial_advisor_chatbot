@@ -1,4 +1,4 @@
-# Streamlit app
+# Streamlit app (app.py)
 import streamlit as st
 import requests
 import os
@@ -69,20 +69,12 @@ st.title("🤖 Mi Chatbot Básico")
 if st.button("✨ Toggle Dark/Light Mode"):
     toggle_theme()
 
-<<<<<<< HEAD
-
-# Definimos la URL de tu backend FastAPI
-# 'backend' es el nombre del servicio en docker-compose, puerto 8000
-# La variable de entorno BACKEND_URL se pasa al contenedor frontend a través del docker-compose.yml
-BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
-API_ENDPOINT = f"{BACKEND_URL}/ask" # El endpoint /ask que definiste en tu FastAPI
-=======
 # Definimos la URL de tu backend FastAPI
 BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
 API_ENDPOINT = f"{BACKEND_URL}/ask"
->>>>>>> e0fecf142eda66485d15374246cec7df18482efa
 
 # Inicialización del historial de mensajes
+# Aquí almacenamos el historial que se muestra Y se envía al backend
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "assistant", "content": "¡Hola! Soy un chatbot. ¿En qué puedo ayudarte hoy?"}
@@ -96,73 +88,86 @@ for message in st.session_state.messages:
 # Entrada del usuario
 if prompt := st.chat_input("Escribe tu mensaje aquí..."):
 
-    # Añadir mensaje del usuario
+    # Añadir mensaje del usuario al historial para mostrarlo y para la próxima petición
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Mostrar mensaje del usuario
+    # Mostrar mensaje del usuario inmediatamente
     with st.chat_message("user"):
         st.markdown(prompt)
+
+    # Preparar el historial para enviar al backend
+    # Aquí puedes decidir cuántos turnos quieres enviar.
+    # Por ejemplo, los últimos 5 turnos (10 mensajes, 5 del user y 5 del assistant)
+    # o toda la conversación si no es muy larga.
+    # Es crucial que el historial no contenga el prompt actual que estamos enviando.
+    # st.session_state.messages ya incluye el prompt actual, así que lo enviamos tal cual.
+    # Sin embargo, para la API de OpenAI, solo queremos los mensajes de 'role' y 'content'.
+    
+    # Creamos una lista de mensajes limpios para el LLM.
+    # Excluimos el mensaje de bienvenida inicial si no queremos que influya en el contexto.
+    # Y nos aseguramos de que cada mensaje tenga solo 'role' y 'content'.
+    chat_history_for_llm = []
+    # Iteramos desde el segundo mensaje si el primero es el de bienvenida fijo
+    start_index = 1 if st.session_state.messages[0]["role"] == "assistant" and \
+                        "¡Hola!" in st.session_state.messages[0]["content"] else 0
+
+    for msg in st.session_state.messages[start_index:-1]: # Excluimos el último mensaje que es el 'prompt' actual
+        chat_history_for_llm.append({"role": msg["role"], "content": msg["content"]})
+    
+    # Puedes limitar la longitud del historial para no exceder los límites de tokens del LLM
+    # Por ejemplo, los últimos 10 mensajes (5 turnos completos):
+    # chat_history_for_llm = chat_history_for_llm[-10:] 
 
     # Respuesta del asistente
     with st.chat_message("assistant"):
         with st.spinner("Pensando..."):
             try:
-<<<<<<< HEAD
                 # Realizar la llamada POST a tu API de FastAPI
-                # Enviamos la pregunta en formato JSON
-                response = requests.post(API_ENDPOINT, json={"question": prompt})
-                response.raise_for_status() # Lanza una excepción para códigos de error HTTP (ej. 404, 500)
-
-                api_response_data = response.json()
-                # Extraemos la respuesta del backend
-                assistant_response_content = api_response_data.get("answer", "Error: No se pudo obtener la respuesta del backend.")
-
-                st.markdown(assistant_response_content)
-
-            except requests.exceptions.ConnectionError:
-                assistant_response_content = "Lo siento, no pude conectar con el servidor backend. Asegúrate de que está funcionando."
-                st.error(assistant_response_content)
-            except requests.exceptions.Timeout:
-                assistant_response_content = "La conexión al backend tardó demasiado en responder."
-                st.error(assistant_response_content)
-            except requests.exceptions.RequestException as e:
-                assistant_response_content = f"Error al interactuar con el backend: {e}. Revisa los logs del backend."
-                st.error(assistant_response_content)
-            except Exception as e:
-                assistant_response_content = f"Ocurrió un error inesperado en el frontend: {e}"
-                st.error(assistant_response_content)
-
-    # Guardar respuesta del asistente
-    st.session_state.messages.append({"role": "assistant", "content": assistant_response_content})
-=======
-                response = requests.post(API_ENDPOINT, json={"question": prompt}, timeout=60)
+                # Enviamos la pregunta y el historial en formato JSON
+                response = requests.post(
+                    API_ENDPOINT,
+                    json={
+                        "question": prompt,
+                        "chat_history": chat_history_for_llm # <-- ¡Aquí enviamos el historial!
+                    },
+                    timeout=60
+                )
                 response.raise_for_status()
 
                 api_response_data = response.json()
 
-                # Extraemos la pregunta original y los chunks
+                # Extraemos todo lo que viene del backend
                 original_question = api_response_data.get("question", "Pregunta desconocida")
+                llm_answer = api_response_data.get("answer", "Error: No se pudo obtener la respuesta del asistente.")
                 retrieved_chunks = api_response_data.get("retrieved_chunks", [])
-                backend_error = api_response_data.get("error") # Por si hay un error del backend
+                backend_error = api_response_data.get("error")
 
-                # --- Construimos el contenido a mostrar en la burbuja del chatbot ---
+                # --- Construimos el contenido final a mostrar en la burbuja del chatbot ---
                 display_content = ""
 
                 if backend_error:
                     display_content += f"**¡Error del Backend!** {backend_error}\n\n"
 
-                display_content += f"**Tu pregunta original:**\n> _{original_question}_\n\n"
+                display_content += f"""
+                **Tu pregunta original:**
+                > _{original_question}_
+
+                ---
+
+                **Respuesta del asistente:**
+                {llm_answer}
+                """
 
                 if retrieved_chunks:
-                    display_content += "**Chunks recuperados:**\n"
+                    chunks_for_expander = ""
                     for i, chunk in enumerate(retrieved_chunks):
-                        display_content += f"- **Chunk {i+1}:** `{chunk}`\n" # Formato Markdown para los chunks
+                        chunks_for_expander += f"**Chunk {i+1}:**\n```\n{chunk}\n```\n\n"
+
+                    st.markdown(display_content)
+                    with st.expander("Ver fuentes (chunks recuperados)"):
+                        st.markdown(chunks_for_expander)
                 else:
-                    display_content += "*No se recuperaron chunks para esta pregunta.*"
-
-
-                # Mostramos el contenido combinado
-                st.markdown(display_content)
+                    st.markdown(display_content + "\n\n*No se recuperaron fuentes para esta respuesta.*")
 
             except requests.exceptions.ConnectionError:
                 display_content = "Lo siento, no pude conectar con el servidor backend. Asegúrate de que está funcionando."
@@ -177,6 +182,6 @@ if prompt := st.chat_input("Escribe tu mensaje aquí..."):
                 display_content = f"Ocurrió un error inesperado en el frontend: {e}"
                 st.error(display_content)
 
-        # Guardamos el contenido completo en el historial del chat
+        # Guardar la respuesta completa en el historial de mensajes de Streamlit
+        # (para que se muestre en la UI y sea parte del contexto futuro)
         st.session_state.messages.append({"role": "assistant", "content": display_content})
->>>>>>> e0fecf142eda66485d15374246cec7df18482efa
