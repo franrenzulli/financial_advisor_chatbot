@@ -1,8 +1,7 @@
-# Streamlit app 
-
+# Streamlit app
 import streamlit as st
-import requests  
-import os        
+import requests
+import os
 
 # --- Función para aplicar estilos CSS dinámicos ---
 def apply_theme():
@@ -70,12 +69,18 @@ st.title("🤖 Mi Chatbot Básico")
 if st.button("✨ Toggle Dark/Light Mode"):
     toggle_theme()
 
+<<<<<<< HEAD
 
 # Definimos la URL de tu backend FastAPI
 # 'backend' es el nombre del servicio en docker-compose, puerto 8000
 # La variable de entorno BACKEND_URL se pasa al contenedor frontend a través del docker-compose.yml
 BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
 API_ENDPOINT = f"{BACKEND_URL}/ask" # El endpoint /ask que definiste en tu FastAPI
+=======
+# Definimos la URL de tu backend FastAPI
+BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
+API_ENDPOINT = f"{BACKEND_URL}/ask"
+>>>>>>> e0fecf142eda66485d15374246cec7df18482efa
 
 # Inicialización del historial de mensajes
 if "messages" not in st.session_state:
@@ -102,6 +107,7 @@ if prompt := st.chat_input("Escribe tu mensaje aquí..."):
     with st.chat_message("assistant"):
         with st.spinner("Pensando..."):
             try:
+<<<<<<< HEAD
                 # Realizar la llamada POST a tu API de FastAPI
                 # Enviamos la pregunta en formato JSON
                 response = requests.post(API_ENDPOINT, json={"question": prompt})
@@ -128,3 +134,49 @@ if prompt := st.chat_input("Escribe tu mensaje aquí..."):
 
     # Guardar respuesta del asistente
     st.session_state.messages.append({"role": "assistant", "content": assistant_response_content})
+=======
+                response = requests.post(API_ENDPOINT, json={"question": prompt}, timeout=60)
+                response.raise_for_status()
+
+                api_response_data = response.json()
+
+                # Extraemos la pregunta original y los chunks
+                original_question = api_response_data.get("question", "Pregunta desconocida")
+                retrieved_chunks = api_response_data.get("retrieved_chunks", [])
+                backend_error = api_response_data.get("error") # Por si hay un error del backend
+
+                # --- Construimos el contenido a mostrar en la burbuja del chatbot ---
+                display_content = ""
+
+                if backend_error:
+                    display_content += f"**¡Error del Backend!** {backend_error}\n\n"
+
+                display_content += f"**Tu pregunta original:**\n> _{original_question}_\n\n"
+
+                if retrieved_chunks:
+                    display_content += "**Chunks recuperados:**\n"
+                    for i, chunk in enumerate(retrieved_chunks):
+                        display_content += f"- **Chunk {i+1}:** `{chunk}`\n" # Formato Markdown para los chunks
+                else:
+                    display_content += "*No se recuperaron chunks para esta pregunta.*"
+
+
+                # Mostramos el contenido combinado
+                st.markdown(display_content)
+
+            except requests.exceptions.ConnectionError:
+                display_content = "Lo siento, no pude conectar con el servidor backend. Asegúrate de que está funcionando."
+                st.error(display_content)
+            except requests.exceptions.Timeout:
+                display_content = "La conexión al backend tardó demasiado en responder."
+                st.error(display_content)
+            except requests.exceptions.RequestException as e:
+                display_content = f"Error al interactuar con el backend: {e}. Revisa los logs del backend."
+                st.error(display_content)
+            except Exception as e:
+                display_content = f"Ocurrió un error inesperado en el frontend: {e}"
+                st.error(display_content)
+
+        # Guardamos el contenido completo en el historial del chat
+        st.session_state.messages.append({"role": "assistant", "content": display_content})
+>>>>>>> e0fecf142eda66485d15374246cec7df18482efa
