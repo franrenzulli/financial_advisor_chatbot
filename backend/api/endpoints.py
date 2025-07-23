@@ -1,29 +1,43 @@
 # FastAPI Backend (e.g., main.py o wherever your router is defined)
+
 from fastapi import APIRouter
 from pydantic import BaseModel
+from typing import List, Dict, Optional # Importar para tipos de historial
 
-from rag.retriever import retrieve_chunks # Solo necesitamos el retriever
+from rag.retriever import retrieve_chunks
+from llm.generator import generate_answer
 
 router = APIRouter()
 
 class QuestionRequest(BaseModel):
     question: str
+    # Nuevo campo para el historial de conversación
+    # Será una lista de diccionarios, donde cada dict tiene 'role' y 'content'
+    chat_history: Optional[List[Dict[str, str]]] = None # Puede ser opcional/vacío
 
 @router.post("/ask")
 async def ask_question(request: QuestionRequest):
     try:
-        # Solo recuperamos los chunks, ¡sin generar nada!
+        # Obtiene los chunks
         retrieved_chunks = retrieve_chunks(request.question, top_k=3)
 
+        # Pasa la pregunta, los chunks Y EL HISTORIAL al generador
+        bot_answer = generate_answer(
+            question=request.question,
+            chunks=retrieved_chunks,
+            chat_history=request.chat_history # Pasamos el historial recibido
+        )
+
         return {
-            "question": request.question,         # La pregunta original del usuario
-            "retrieved_chunks": retrieved_chunks # Los chunks que se recuperaron
+            "question": request.question,
+            "answer": bot_answer,
+            "retrieved_chunks": retrieved_chunks
         }
 
     except Exception as e:
         print(f"ERROR BACKEND: {e}")
         return {
-            "question": request.question, # Aún devolvemos la pregunta en caso de error
-            "retrieved_chunks": [],      # Y una lista vacía de chunks
-            "error": f"Error inesperado en el backend: {e}" # Para depuración
+            "question": request.question,
+            "answer": f"Error inesperado en el backend: {e}",
+            "retrieved_chunks": []
         }
