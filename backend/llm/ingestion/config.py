@@ -11,7 +11,7 @@ AWS_REGION = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
 PREFIX = os.getenv("PREFIX")
 
 # Configuración de archivos y directorios
-VECTOR_DIR = "/app/vector-store"
+VECTOR_DIR = os.path.join(os.path.dirname(__file__), "./vector-store")
 PROCESSED_FILES_PATH = "processed_pdfs.txt"
 PROBLEMATIC_FILES_PATH = "problematic_files.txt"
 LOG_FILE_PATH = "pdf_processing.log"
@@ -21,9 +21,6 @@ WORKERS = int(os.getenv("WORKERS", 4))
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", 10))
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", 1000))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", 200))
-CHROMADB_PORT = int(os.getenv("CHROMADB_PORT", 8000))
-CHROMADB_HOST = os.getenv("CHROMADB_HOST", "localhost")
-
 
 # Configuración de archivos PDF
 MIN_FILE_SIZE = 1024  # 1KB
@@ -55,4 +52,4 @@ def setup_logging():
     return logging.getLogger(__name__)
 
 # Configuración de embeddings
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"

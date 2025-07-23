@@ -15,6 +15,8 @@ services:
     build: ./backend 
     ports:
       - "8000:8000" # FastAPI default port
+    depends_on:
+      - vector_db # Backend needs the vector_db to be up
     environment:
       # If your backend needs to connect to ChromaDB, specify its internal network address
       CHROMADB_HOST: vector_db
@@ -24,12 +26,24 @@ services:
 
   ingestion:
     build:
-      context: .
-      dockerfile: backend/llm/Dockerfile
+      context: ./backend/llm
+      dockerfile: Dockerfile
     container_name: ingestion-job
     env_file: .env
     volumes:
       - ./backend/llm/vector-store:/app/vector-store
-      - ./backend/llm/ingestion:/app  # Cambia esto!
+      - ./backend/llm/ingestion:/app
     working_dir: /app
+    depends_on:
+      - vector_db
     command: ["python", "process_s3_documents.py"]
+
+  vector_db:
+    image: chromadb/chroma # Example ChromaDB image, check their official Docker Hub for the latest
+    ports:
+      - "8001:8000" # Expose ChromaDB's API port
+    volumes:
+      - chromadb_data:/chroma/data # Persistent storage for your ChromaDB data
+
+volumes:
+  chromadb_data: # Define the named volume for persistence
