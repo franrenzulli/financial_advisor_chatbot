@@ -1,31 +1,27 @@
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import SentenceTransformerEmbeddings
 
+# Configuración
+CHROMA_DB_PATH = "./chroma_db"
+COLLECTION_NAME = "documents"
 
-from chromadb.utils import embedding_functions
-from chromadb import Client
-from typing import List
+# Inicializamos embeddings (mismo modelo que usaste para indexar)
+embedding_function = SentenceTransformerEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-# --- Configuración de Chroma ---
-CHROMA_DB_PATH = "./chroma_db"  # Carpeta donde se guardan los datos
-COLLECTION_NAME = "documents"   # Nombre de la colección
-
-def retrieve_relevant_chunks(question_embedding, top_k: int = 3) -> List[str]:
+def retrieve_chunks(query: str, top_k: int = 3):
     """
-    Busca en ChromaDB los chunks más similares al embedding de la pregunta.
-    Devuelve una lista de textos relevantes.
+    Usa LangChain + Chroma para recuperar los chunks más relevantes.
+    Devuelve solo texto plano de cada chunk.
     """
-    # Conexión al cliente de Chroma
-    chroma_client = Client(settings={"persist_directory": CHROMA_DB_PATH})
-    
-    # Obtener la colección ya existente con los embeddings indexados
-    collection = chroma_client.get_collection(name=COLLECTION_NAME)
-
-    # Ejecutar búsqueda
-    results = collection.query(
-        query_embeddings=[question_embedding.tolist()],  # debe ser lista de listas
-        n_results=top_k
+    # Conectar al vector store persistido
+    vectorstore = Chroma(
+        collection_name=COLLECTION_NAME,
+        embedding_function=embedding_function,
+        persist_directory=CHROMA_DB_PATH
     )
 
-    # results['documents'] es una lista de listas → flatten
-    retrieved_chunks = results["documents"][0]
+    # Recuperar documentos más similares
+    results = vectorstore.similarity_search(query, k=top_k)
 
-    return retrieved_chunks
+    # Extraer solo el contenido de los chunks
+    return [doc.page_content for doc in results]
