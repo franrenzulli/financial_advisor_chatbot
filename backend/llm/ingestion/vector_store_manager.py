@@ -61,7 +61,6 @@ class VectorStoreManager:
                 embedding_function=self.embedding_function
             )
             
-            # Intentar obtener información básica
             collection = vectorstore._collection
             count = collection.count()
             
