@@ -1,35 +1,43 @@
+# FastAPI Backend (e.g., main.py o wherever your router is defined)
+
 from fastapi import APIRouter
 from pydantic import BaseModel
-import os 
+from typing import List, Dict, Optional # Importar para tipos de historial
 
-# Importa la función para convertir preguntas de usuarios en embeddings
-from rag.embedder import get_embedding_for_question
+from rag.retriever import retrieve_chunks
+from llm.generator import generate_answer
 
 router = APIRouter()
 
-# pydantic model for user request
 class QuestionRequest(BaseModel):
     question: str
+    # Nuevo campo para el historial de conversación
+    # Será una lista de diccionarios, donde cada dict tiene 'role' y 'content'
+    chat_history: Optional[List[Dict[str, str]]] = None # Puede ser opcional/vacío
 
 @router.post("/ask")
 async def ask_question(request: QuestionRequest):
-
     try:
-        # Convertir la pregunta en un vector numérico (embedding)
+        # Obtiene los chunks
+        retrieved_chunks = retrieve_chunks(request.question, top_k=3)
 
-        question_embedding = get_embedding_for_question(request.question)
-
-        # --- AQUÍ IRÍAN TUS PRÓXIMOS PASOS (RAG, Búsqueda en ChromaDB, LLM, OpenAI API, etc.) 
+        # Pasa la pregunta, los chunks Y EL HISTORIAL al generador
+        bot_answer = generate_answer(
+            question=request.question,
+            chunks=retrieved_chunks,
+            chat_history=request.chat_history # Pasamos el historial recibido
+        )
 
         return {
-            "answer": f"Backend dice: Recibí tu pregunta '{request.question}'. "
-                      f"La convertí a un embedding de forma {question_embedding.shape}! "
-                      f"¡Listo para los siguientes pasos!"
+            "question": request.question,
+            "answer": bot_answer,
+            "retrieved_chunks": retrieved_chunks
         }
 
-    except RuntimeError as e: # Captura la excepción que lanzaría get_embedding_for_question si el modelo no cargó
-        print(f"ERROR BACKEND: {e}")
-        return {"answer": f"Error interno del servidor: {e}. No se pudo generar el embedding."}
     except Exception as e:
-        print(f"ERROR BACKEND: Error inesperado al procesar la pregunta: {e}")
-        return {"answer": f"Ocurrió un error inesperado. Por favor, intenta de nuevo. Detalles: {e}"}
+        print(f"ERROR BACKEND: {e}")
+        return {
+            "question": request.question,
+            "answer": f"Error inesperado en el backend: {e}",
+            "retrieved_chunks": []
+        }
