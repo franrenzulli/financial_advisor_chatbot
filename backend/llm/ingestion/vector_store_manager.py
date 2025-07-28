@@ -1,7 +1,7 @@
 import time
 import logging
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
 from config import VECTOR_DIR, EMBEDDING_MODEL
 
 logger = logging.getLogger(__name__)
@@ -13,16 +13,6 @@ class VectorStoreManager:
         self.embedding_function = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
         self.vector_dir = VECTOR_DIR
         logger.info(f"VectorStoreManager inicializado con modelo: {EMBEDDING_MODEL}")
-    
-    def clean_existing_store(self):
-        """Limpia la base vectorial existente"""
-        try:
-            logger.info("🧹 Limpiando base vectorial anterior...")
-            clean_vector_store(self.vector_dir)
-            logger.info("✅ Base vectorial limpiada exitosamente")
-        except Exception as e:
-            logger.error(f"❌ Error limpiando base vectorial: {e}")
-            raise
     
     def save_documents(self, documents):
         """
