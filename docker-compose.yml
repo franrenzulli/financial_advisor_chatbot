@@ -1,37 +1,68 @@
-version: '3.8'
-
 services:
+  # Servicio Frontend (React)
   frontend:
-    build: ./frontend 
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
-      - "8501:8501" # Default Streamlit port
+      - "3000:3000" # Puerto estándar de React
     depends_on:
-      - backend
+      - api
     environment:
-      # The backend service will be reachable at http://backend:8000 from within the Docker network
-      BACKEND_URL: http://backend:8000
-
-  backend:
-    build: ./backend 
-    ports:
-      - "8000:8000" # FastAPI default port
-    env_file:
-      - ./.env
-    depends_on:
-      - vector_db # Backend needs the vector_db to be up
-    environment:
-      # If your backend needs to connect to ChromaDB, specify its internal network address
-      CHROMADB_HOST: vector_db
-      CHROMADB_PORT: 8000 # Default ChromaDB port (check if this is correct for your ChromaDB setup)
-      # You might also need OpenAI API key here, or manage it securely elsewhere
-      OPENAI_API_KEY: ${OPENAI_API_KEY} # Best practice: use environment variable
-
-  vector_db:
-    image: chromadb/chroma # Example ChromaDB image, check their official Docker Hub for the latest
-    ports:
-      - "8001:8000" # Expose ChromaDB's API port
+      - REACT_APP_API_URL=http://localhost:8000 # Para acceso desde el navegador
     volumes:
-      - chromadb_data:/chroma/data # Persistent storage for your ChromaDB data
+      - ./frontend:/app # Para hot reload en desarrollo
+      - /app/node_modules # Evita conflictos con node_modules
 
-volumes:
-  chromadb_data: # Define the named volume for persistence
+  # Servicio API (FastAPI)
+  api:
+    build: 
+      context: ./backend/api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - rag
+    environment:
+      - RAG_SERVICE_URL=http://rag:8001 # URL interna para comunicación entre servicios
+    volumes:
+      - ./backend/api:/app # Para desarrollo
+      - ./backend/vector-store:/app/vector-store # Acceso compartido a la base vectorial
+
+  # Servicio RAG
+  rag:
+    build: 
+      context: ./backend/rag
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001" # Puerto diferente para evitar conflictos
+    env_file:
+      - .env
+    volumes:
+      - ./backend/rag:/app # Para desarrollo
+      - ./backend/vector-store:/app/vector-store # Acceso compartido a la base vectorial
+    environment:
+      - VECTOR_STORE_PATH=/app/vector-store
+
+  # Servicio de Ingestion (se ejecuta una vez y se detiene)
+  ingestion:
+    build: 
+      context: ./backend/llm
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ./backend/llm:/app
+      - ./backend/llm/vector-store:/app/vector-store # Donde guardará los vectores
+    environment:
+      - VECTOR_STORE_PATH=/app/vector-store
+    # Este servicio se ejecuta una vez y termina
+    restart: "no"
+    profiles:
+      - ingestion # Solo se ejecuta cuando se especifica este perfil
+
+networks:
+  default:
+    driver: bridge
