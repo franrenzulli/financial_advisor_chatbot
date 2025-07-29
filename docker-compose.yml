@@ -1,68 +1,57 @@
+# C:\Users\franc\OneDrive\Desktop\financialAdvisorv2\docker-compose.yml
+# Sin línea 'version'
+
 services:
-  # Servicio Frontend (React)
+  # --- Servicio de la Base de Datos Vectorial (ChromaDB) ---
+  vector_db:
+    image: chromadb/chroma
+    ports:
+      - "8001:8000" # Mapea el puerto 8001 del HOST a 8000 del CONTENEDOR
+    volumes:
+      - chromadb_data:/chroma/data # Almacenamiento persistente
+    restart: always # Que intente reiniciarse si se cae
+
+
+  # --- Servicio del Backend (FastAPI) ---
+  backend:
+    build: ./backend # Ruta a tu carpeta 'backend'
+    ports:
+      - "8000:8000"
+    # Sin 'env_file' (puedes descomentarlo si lo necesitas y el archivo existe)
+    depends_on:
+      - vector_db # Solo asegura el orden de inicio, no espera a que esté saludable
+    environment:
+      CHROMADB_HOST: vector_db
+      CHROMADB_PORT: 8000
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - ./backend:/app # Mapea el código local
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    restart: always # Que intente reiniciarse si se cae
+
+
+  # --- Servicio del Frontend (React) ---
   frontend:
-    build: 
+    build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000" # Puerto estándar de React
+      - "3000:3000" # O el puerto que uses para tu frontend (ej. "3000:3000")
     depends_on:
-      - api
-    environment:
-      - REACT_APP_API_URL=http://localhost:8000 # Para acceso desde el navegador
+      - backend
     volumes:
-      - ./frontend:/app # Para hot reload en desarrollo
-      - /app/node_modules # Evita conflictos con node_modules
-
-  # Servicio API (FastAPI)
-  api:
-    build: 
-      context: ./backend/api
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    depends_on:
-      - rag
+      - ./frontend:/app
+      - /app/node_modules
     environment:
-      - RAG_SERVICE_URL=http://rag:8001 # URL interna para comunicación entre servicios
-    volumes:
-      - ./backend/api:/app # Para desarrollo
-      - ./backend/vector-store:/app/vector-store # Acceso compartido a la base vectorial
+      # --- ¡¡¡CAMBIO CRÍTICO AQUÍ!!! ---
+      # Le decimos al frontend que el backend es localhost:8000
+      REACT_APP_API_URL: http://localhost:8000
+      HOST: 0.0.0.0
+      CHOKIDAR_USEPOLLING: "true"
+    command: ["npm", "start"]
+    restart: always
 
-  # Servicio RAG
-  rag:
-    build: 
-      context: ./backend/rag
-      dockerfile: Dockerfile
-    ports:
-      - "8001:8001" # Puerto diferente para evitar conflictos
-    env_file:
-      - .env
-    volumes:
-      - ./backend/rag:/app # Para desarrollo
-      - ./backend/vector-store:/app/vector-store # Acceso compartido a la base vectorial
-    environment:
-      - VECTOR_STORE_PATH=/app/vector-store
 
-  # Servicio de Ingestion (se ejecuta una vez y se detiene)
-  ingestion:
-    build: 
-      context: ./backend/llm
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    volumes:
-      - ./backend/llm:/app
-      - ./backend/llm/vector-store:/app/vector-store # Donde guardará los vectores
-    environment:
-      - VECTOR_STORE_PATH=/app/vector-store
-    # Este servicio se ejecuta una vez y termina
-    restart: "no"
-    profiles:
-      - ingestion # Solo se ejecuta cuando se especifica este perfil
-
-networks:
-  default:
-    driver: bridge
+# --- Volúmenes para persistencia de datos ---
+volumes:
+  chromadb_data:
