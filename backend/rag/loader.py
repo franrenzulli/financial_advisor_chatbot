@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List
 import pytesseract
 
-from ibm_docprocessing import DocumentParser
+#from ibm_docprocessing import DocumentParser
 from docx import Document as DocxDocument
 from PIL import Image
 from langchain_core.documents import Document
@@ -18,12 +18,12 @@ SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".doc", ".jpg", ".jpeg", ".png"}
 def extract_text(file_path: Path) -> str:
     ext = file_path.suffix.lower()
 
-    if ext == ".pdf":
-        parser = DocumentParser()
-        result = parser.parse(file_path)
-        return result.text
+    #if ext == ".pdf":
+        #parser = DocumentParser()
+        #result = parser.parse(file_path)
+        #return result.text
 
-    elif ext in {".docx", ".doc"}:
+    if ext in {".docx", ".doc"}:
         doc = DocxDocument(file_path)
         return "\n".join([p.text for p in doc.paragraphs])
 
