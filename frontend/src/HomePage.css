@@ -1,0 +1,130 @@
+.homepage-container {
+  display: flex; /* Usa Flexbox para las dos columnas */
+  min-height: 100vh; /* Ocupa toda la altura de la ventana */
+  background-color: #f0f0f0; /* Fondo del light mode */
+  font-family: 'Ubuntu', sans-serif;
+  transition: background-color 0.3s ease;
+  overflow: hidden; /* Para manejar cualquier desbordamiento de la imagen */
+}
+
+.homepage-left {
+  flex: 1; /* Ocupa la mitad izquierda */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px; /* Espacio alrededor de la imagen */
+  background-color: #fff; /* Fondo blanco para la sección de la imagen */
+}
+
+.homepage-image {
+  max-width: 100%; /* La imagen no excederá el ancho de su contenedor */
+  height: auto;
+  object-fit: contain; /* Asegura que la imagen se ajuste sin cortarse */
+}
+
+.homepage-right {
+  flex: 1; /* Ocupa la mitad derecha */
+  display: flex;
+  flex-direction: column; /* Apila el mensaje y el botón verticalmente */
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  text-align: center;
+  background-color: #fff; /* Fondo blanco inicial para la sección derecha */
+}
+
+.message-area {
+  background-color: rgb(232,232,255); /* AZUL CLARITO para el área del mensaje */
+  padding: 30px;
+  border-radius: 10px;
+  margin-bottom: 30px; /* Espacio entre el mensaje y el botón */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  max-width: 500px; /* Ancho máximo para el área del mensaje */
+}
+
+.message-area h1 {
+  font-size: 2.2em;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.message-area p {
+  font-size: 1.1em;
+  color: #555;
+  line-height: 1.6;
+}
+
+.start-chat-button {
+  display: inline-block;
+  padding: 15px 30px;
+  background-color: rgb(145,145,255); 
+  color: white;
+  text-decoration: none;
+  border-radius: 15px;
+  font-size: 1.4em;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra para el botón */
+}
+
+.start-chat-button:hover {
+  background-color: rgb(68, 68, 117); /* ROJO más oscuro para el hover */
+  transform: translateY(-2px);
+}
+
+/* --- Dark Mode para HomePage --- */
+body.dark .homepage-container {
+  background-color: #282c34;
+}
+
+body.dark .homepage-left {
+  background-color: #1e1e1e; /* Fondo oscuro para la sección de la imagen */
+}
+
+body.dark .homepage-image {
+  filter: brightness(0.8) contrast(1.2); /* Ajuste para que la imagen se vea bien en Dark Mode */
+}
+
+body.dark .homepage-right {
+  background-color: #212121; /* Fondo oscuro para la sección derecha */
+}
+
+body.dark .message-area {
+  background-color: #4682B4; /* AZUL MÁS OSCURO para el área del mensaje en Dark Mode */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+body.dark .message-area h1 {
+  color: #f8f8f2;
+}
+
+body.dark .message-area p {
+  color: #bbb;
+}
+
+body.dark .start-chat-button {
+  background-color: #DC143C; /* ROJO para el botón en Dark Mode */
+  color: white; /* Mantener texto blanco para el botón */
+}
+
+body.dark .start-chat-button:hover {
+  background-color: #B22222; /* ROJO más oscuro para el hover en Dark Mode */
+}
+
+/* Media Queries para pantallas más pequeñas (opcional, pero recomendado) */
+@media (max-width: 768px) {
+  .homepage-container {
+    flex-direction: column; /* Apila las columnas en pantallas pequeñas */
+  }
+
+  .homepage-left,
+  .homepage-right {
+    flex: none; /* Elimina el flex-grow */
+    width: 100%; /* Ocupa todo el ancho */
+    padding: 20px;
+  }
+
+  .homepage-image {
+    max-height: 300px; /* Limita la altura de la imagen en móviles */
+  }
+}

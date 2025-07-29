@@ -1,0 +1,304 @@
+/* Overlay que cubre toda la pantalla */
+.settings-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente oscuro */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* Asegura que esté por encima de todo lo demás */
+}
+
+/* El panel de configuración en sí */
+.settings-panel {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 400px; /* Ancho máximo para pantallas grandes */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Encabezado del panel de configuración */
+.settings-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.settings-panel-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.settings-panel .close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #555;
+  transition: color 0.2s ease;
+}
+
+.settings-panel .close-button:hover {
+  color: #000;
+}
+
+/* Cuerpo del panel de configuración */
+.settings-panel-body {
+  flex-grow: 1;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-item span {
+  font-size: 16px;
+  color: #333;
+}
+
+/* Estilos para el switch (Modo Oscuro/Claro) */
+/* Inspirado en https://www.w3schools.com/howto/howto_css_switch.asp */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 23px; /* Altura ajustada para ser más compacto */
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 15px; /* Tamaño del círculo */
+  width: 15px;
+  left: 4px; /* Posición inicial */
+  bottom: 4px; /* Posición inicial */
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #007bff; /* Color azul cuando está activo */
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #007bff;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(17px); /* Mueve el círculo a la derecha */
+  -ms-transform: translateX(17px);
+  transform: translateX(17px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 23px; /* Hace el fondo redondeado */
+}
+
+.slider.round:before {
+  border-radius: 50%; /* Hace el círculo redondeado */
+}
+
+/* ******************************************************
+  Estilos para el Dark Mode (aplicados al body)
+  ****************************************************** */
+
+body.dark {
+  background-color: #282c34; /* Fondo oscuro principal */
+  color: #f8f8f2; /* Color de texto general claro */
+}
+
+body.dark .app-container {
+  background-color: #282c34; /* Asegura que el contenedor principal también sea oscuro */
+}
+
+body.dark .sidebar {
+  background-color: #1e1e1e; /* Sidebar más oscuro */
+  border-color: #333;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+body.dark .new-chat-button {
+  background-color: rgba(145,145,255); /* Un color de acento para el botón en dark mode */
+  color: #282c34;
+}
+body.dark .new-chat-button:hover {
+  background-color: #6A6AD3;
+}
+
+body.dark .conversations-header,
+body.dark .chat-title,
+body.dark .configuration-link {
+  color: #ddd; /* Texto más claro */
+}
+
+body.dark .hamburger-menu-button {
+  color: #bbb; /* Icono más claro */
+}
+body.dark .hamburger-menu-button:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+body.dark .chat-item {
+  background-color: #2a2a2a;
+}
+body.dark .chat-item:hover {
+  background-color: #3a3a3a;
+}
+body.dark .chat-item.active {
+  background-color: rgb(120, 120, 196); /* Fondo activo en dark mode */
+  border-left-color: rgb(68, 68, 117); /* Borde activo en dark mode */
+}
+
+body.dark .chat-last-message-time {
+  color: #aaa;
+}
+
+body.dark .delete-chat-button {
+  color: #f8f8f2; /* X más clara */
+}
+body.dark .delete-chat-button:hover {
+  color: #fff;
+}
+
+body.dark .login-button,
+body.dark .login-google-button {
+  background-color: #3a3a3a;
+  color: #f8f8f2;
+  border-color: #555;
+}
+body.dark .login-button:hover,
+body.dark .login-google-button:hover {
+  background-color: #4a4a4a;
+  border-color: #666;
+}
+body.dark .google-logo {
+  filter: invert(0.9); /* Para que el logo de Google se vea bien en fondo oscuro */
+}
+
+
+body.dark .sidebar-footer {
+  border-top-color: #333;
+}
+
+/* Chat Window en Dark Mode */
+body.dark .chat-window {
+  background-color: #212121; /* Fondo oscuro de la ventana de chat */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+body.dark .header {
+  background-color: #1e1e1e; /* Header oscuro */
+  border-bottom-color: #333;
+}
+body.dark .chat-title-display,
+body.dark .settings-icon {
+  color: #f8f8f2;
+}
+
+body.dark .message-bubble.bot {
+  background-color: #3a3a3a; /* Burbuja bot en dark mode */
+  color: #f8f8f2;
+}
+body.dark .message-bubble.user {
+  background-color: rgba(145,145,255); /* Burbuja user en dark mode */
+  color: #282c34;
+}
+
+body.dark .message-input-area {
+  background-color: #1e1e1e;
+  border-top-color: #333;
+}
+body.dark .message-textarea {
+  background-color: #333;
+  color: #f8f8f2;
+  border-color: #555;
+}
+body.dark .message-textarea:focus {
+  border-color: #61dafb;
+  box-shadow: 0 0 0 2px rgba(97, 218, 251, 0.25);
+}
+body.dark .send-button {
+  background-color: rgba(145,145,255);
+  color: #282c34;
+}
+body.dark .send-button:hover {
+  background-color: #6A6AD3;
+}
+body.dark .input-hint {
+  background-color: #1e1e1e;
+  color: #aaa;
+}
+
+/* Settings Panel en Dark Mode */
+body.dark .settings-panel-overlay {
+  background-color: rgba(0, 0, 0, 0.7); /* Overlay más oscuro */
+}
+body.dark .settings-panel {
+  background-color: #2a2a2a;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+body.dark .settings-panel-header {
+  border-bottom-color: #444;
+}
+body.dark .settings-panel-header h2,
+body.dark .setting-item span {
+  color: #f8f8f2;
+}
+body.dark .settings-panel .close-button {
+  color: #ccc;
+}
+body.dark .settings-panel .close-button:hover {
+  color: #fff;
+}
+body.dark .setting-item {
+  border-bottom-color: #3a3a3a;
+}
+body.dark .slider {
+  background-color: #555; /* Slider in dark mode */
+}
+input:checked + .slider {
+  background-color: #61dafb; /* Color activo en dark mode */
+}
+input:checked + .slider:before {
+  background-color: #282c34; /* Color del círculo en dark mode */
+}
