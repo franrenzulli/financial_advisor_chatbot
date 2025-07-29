@@ -1,0 +1,28 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+  font-family: 'Ubuntu', sans-serif;
+  background-color: #f0f0f0; /* Fondo principal de la aplicación */
+  overflow: hidden; /* Evita el scroll general */
+  /* Eliminamos cualquier posicionamiento o padding-left que habíamos añadido antes */
+}
+
+/* Los estilos para hamburger-menu-button se definen AHORA en Sidebar.css */
+
+/* El ChatWindow se expande automáticamente gracias a flex-grow: 1 */
+.chat-window {
+  flex-grow: 1; /* Ocupa el espacio restante */
+  display: flex;
+  flex-direction: column;
+  background-color: #fff; /* Fondo blanco para la ventana de chat */
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 15px; /* Margen alrededor de la ventana de chat */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+body{
+  margin: 0;
+}
+
+/* Puedes añadir más estilos generales de la aplicación aquí si es necesario */

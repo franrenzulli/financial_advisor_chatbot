@@ -1,0 +1,292 @@
+.sidebar {
+  width: 250px; /* Ancho por defecto cuando está expandido */
+  background-color: #fff;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  padding: 15px; /* Padding general */
+  padding-top: 50px; /* Suficiente espacio arriba para el botón de hamburguesa */
+  padding-left: 15px; /* Asegura espacio a la izquierda para el botón y contenido */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  overflow-y: auto;
+  flex-shrink: 0;
+  transition: width 0.3s ease-out, padding 0.3s ease-out;
+  position: relative; /* CRUCIAL: Necesario para el posicionamiento absoluto del botón */
+}
+
+/* Estado contraído del sidebar */
+.sidebar.collapsed {
+  width: 60px; /* Ancho cuando está contraído (solo para el icono de hamburguesa) */
+  padding: 15px 10px; /* Padding reducido, pero el padding-top se mantiene efectivo por el botón */
+  padding-top: 50px; /* Mantiene el espacio superior para el botón */
+  overflow: hidden; /* Oculta el contenido que se desborda */
+}
+
+/* HEADER DEL SIDEBAR (contenedor del botón) - Ahora solo ajusta el espacio para el resto del contenido */
+.sidebar-header-top {
+  display: flex; /* Mantenemos flex para alinear el texto si aparece */
+  justify-content: flex-start;
+  align-items: center;
+  padding-bottom: 20px; /* Espacio debajo del botón y antes del "Nuevo chat" */
+}
+
+/* El botón de hamburguesa ahora es POSICIONADO ABSOLUTO */
+.hamburger-menu-button {
+  position: absolute; /* CAMBIO CLAVE: Posicionamiento absoluto */
+  top: 15px; /* CAMBIO: Posición desde arriba del sidebar */
+  left: 15px; /* CAMBIO: Posición desde la izquierda del sidebar */
+  z-index: 1001; /* Asegura que esté por encima de todo */
+
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.hamburger-menu-button:hover {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.hamburger-menu-button svg {
+  display: block;
+}
+
+/* Oculta el texto del header cuando el sidebar está contraído */
+.sidebar-header-text {
+  margin-left: 10px;
+  margin-top: 20px;
+  font-weight: bold;
+  color: #333; /* Color por defecto (light mode) */
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.3s ease-out, margin-left 0.3s ease-out;
+}
+
+.sidebar.collapsed .sidebar-header-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  margin-left: 0;
+  pointer-events: none;
+}
+
+/* Estilos para el nuevo login-buttons-container y sus botones */
+.login-buttons-container {
+  margin-top: 0; /* Lo pones arriba, así que no necesita margin-top */
+  padding-bottom: 15px; /* Espacio antes del siguiente elemento */
+  border-bottom: 1px solid #e0e0e0; /* Borde inferior para separarlo */
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Espacio entre los botones */
+  margin-bottom: 15px; /* Espacio después de los botones y antes del nuevo chat */
+}
+
+.login-button, /* Si alguna vez lo reintroduces */
+.login-google-button {
+  width: 100%;
+  padding: 10px 15px;
+  font-family: 'Ubuntu', sans-serif;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Puedes eliminar .login-button si no lo usas */
+.login-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.login-button:hover {
+  background-color: #e0e0e0;
+}
+
+.login-google-button {
+  background-color: #fff;
+  color: #333;
+  border-color: #ddd;
+}
+
+.login-google-button:hover {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.google-logo {
+  width: 18px; /* Tamaño del logo de Google */
+  height: 18px;
+  margin-right: 8px; /* Espacio entre el logo y el texto */
+}
+
+
+/* Ocultar estos elementos cuando el sidebar está colapsado */
+.sidebar.collapsed .login-buttons-container,
+.sidebar.collapsed .new-chat-button-container, /* Asegura que este también se oculte */
+.sidebar.collapsed .conversations-header,
+.sidebar.collapsed .chat-list,
+.sidebar.collapsed .sidebar-footer {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out, width 0.3s ease-out, height 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out;
+}
+
+/* Estilos para el botón "Nuevo chat" */
+.new-chat-button-container {
+  margin-bottom: 20px;
+}
+
+.new-chat-button {
+  font-family: 'Ubuntu', sans-serif;
+  width: 100%;
+  padding: 10px 15px;
+  background-color: rgb(145,145,255);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
+}
+
+.new-chat-button:hover {
+  background-color: #6A6AD3;
+}
+
+/* Estilos para el encabezado "Conversaciones" */
+.conversations-header {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #555;
+  font-size: 14px;
+}
+
+/* Estilos para la lista de chats */
+.chat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.chat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.chat-item:hover {
+  background-color: #eee;
+}
+
+.chat-item.active {
+  background-color: rgb(232,232,255);
+  border-left: 3px solid rgb(145,145,255);
+  padding-left: 12px;
+}
+
+.chat-title {
+  font-size: 15px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.chat-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.delete-chat-button {
+  background-color: transparent;
+  color: #000;
+  border: none;
+  border-radius: 0;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.delete-chat-button:hover {
+  opacity: 1;
+  color: #000;
+}
+
+.chat-last-message-time {
+  font-size: 12px;
+  color: #888;
+  flex-shrink: 0;
+}
+
+.sidebar-footer {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.configuration-link {
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.configuration-link:hover {
+  color: rgb(145,145,255);
+  background-color: #f0f0f0;
+}
+
+/* ******************************************************
+   Dark Mode styles for Sidebar (located at the end for specificity)
+   ****************************************************** */
+body.dark .sidebar-header-text {
+  color: #ddd; /* <-- AHORA SÍ: El color blanco para el texto en Dark Mode */
+}
+
+/* En src/Sidebar.css, dentro del bloque body.dark */
