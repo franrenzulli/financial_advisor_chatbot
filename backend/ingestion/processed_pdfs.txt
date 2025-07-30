@@ -1,0 +1,12 @@
+nasdaq_annual_reports/10x-genomics-inc/NASDAQ_TXG_2021.pdf
+nasdaq_annual_reports/10x-genomics-inc/NASDAQ_TXG_2019.pdf
+nasdaq_annual_reports/111-inc/NASDAQ_YI_2018.pdf
+nasdaq_annual_reports/1-800-flowerscom/NASDAQ_FLWS_2022.pdf
+nasdaq_annual_reports/1-800-flowerscom/NASDAQ_FLWS_2020.pdf
+nasdaq_annual_reports/1-800-flowerscom/NASDAQ_FLWS_2021.pdf
+nasdaq_annual_reports/1-800-flowerscom/NASDAQ_FLWS_2019.pdf
+nasdaq_annual_reports/1895-bancorp-of-wisconsin-inc/NASDAQ_BCOW_2021.pdf
+nasdaq_annual_reports/1347-property-insurance-holdings-inc/NASDAQ_PIH_2015.pdf
+nasdaq_annual_reports/1347-property-insurance-holdings-inc/NASDAQ_PIH_2016.pdf
+nasdaq_annual_reports/111-inc/NASDAQ_YI_2019.pdf
+nasdaq_annual_reports/1347-property-insurance-holdings-inc/NASDAQ_PIH_2017.pdf
