@@ -1,0 +1,17 @@
+services:
+  backend:
+    # Límites para desarrollo local
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '4.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    
+    # Variables de entorno para desarrollo
+    environment:
+      - DEBUG=true
+      - MAX_WORKERS=7
+      - BATCH_SIZE=7
