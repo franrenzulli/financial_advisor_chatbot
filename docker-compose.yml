@@ -24,8 +24,10 @@ services:
       CHROMADB_HOST: vector_db
       CHROMADB_PORT: 8000
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
     volumes:
       - ./backend:/app # Mapea el código local
+      - ./data:/app/data
     restart: always # Que intente reiniciarse si se cae
     env_file: .env
 
