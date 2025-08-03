@@ -2,9 +2,13 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware # <--- ¡IMPORTA ESTO!
+from feedback.database import init_db # Asegúrate que la importación sea correcta
 
 # import all endpoints from /api/endpoints.py
 from api.endpoints import router as api_router
+
+init_db()
+
 
 app = FastAPI()
 
