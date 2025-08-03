@@ -1,361 +1,545 @@
+/* ======================================================
+   Estilos Generales de ChatWindow
+   ====================================================== */
 .chat-window {
-  flex-grow: 1; /* Takes up the remaining space */
-  display: flex;
-  flex-direction: column;
-  background-color: #f7f7f7;
-  border-radius: 8px;
-  overflow: hidden;
-  margin: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    flex-grow: 1; /* Takes up the remaining space */
+    display: flex;
+    flex-direction: column;
+    background-color: #f7f7f7;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .no-chat-selected {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #777;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #777;
 }
 
 .messages-container {
-  flex-grow: 1;
-  padding: 20px;
-  overflow-y: auto; /* Allow messages to scroll */
-  display: flex;
-  flex-direction: column; /* Messages stack vertically */
-  gap: 10px; /* Space between message bubbles */
-  position: relative; /* Para el posicionamiento del overlay */
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto; /* Allow messages to scroll */
+    display: flex;
+    flex-direction: column; /* Messages stack vertically */
+    gap: 10px; /* Space between message bubbles */
+    position: relative; /* Para el posicionamiento del overlay */
 }
 
-/* Estilos del mensaje de bienvenida (mantener los existentes) */
+/* ======================================================
+   Estilos del Mensaje de Bienvenida
+   ====================================================== */
 .welcome-message-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  /* CAMBIO: Alineación al inicio para dar espacio a los prompts debajo del texto */
-  align-items: flex-start; /* Alinea el contenido al inicio del contenedor */
-  padding-top: 10%; /* Ajusta este valor para controlar la distancia desde arriba */
-  text-align: center;
-  pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Alinea el contenido al inicio del contenedor */
+    padding-top: 10%; /* Ajusta este valor para controlar la distancia desde arriba */
+    text-align: center;
+    pointer-events: none; /* Por defecto, no permite interacción */
 }
 
 .welcome-content {
-  max-width: 600px;
-  padding: 20px;
-  color: #777;
-  /* CAMBIO: pointer-events auto para que los prompts sean clickeables */
-  pointer-events: auto; /* Permite interactuar con los prompts */
+    max-width: 600px;
+    padding: 20px;
+    color: #777;
+    pointer-events: auto; /* Permite interactuar con los prompts dentro */
 }
 
 .welcome-content h1 {
-  font-size: 2em;
-  margin-bottom: 10px;
-  color: #333;
+    font-size: 2em;
+    margin-bottom: 10px;
+    color: #333;
 }
 
 .welcome-content p {
-  font-size: 1.1em;
-  line-height: 1.5;
-  margin-bottom: 10px;
+    font-size: 1.1em;
+    line-height: 1.5;
+    margin-bottom: 10px;
 }
-/* FIN mensaje de bienvenida */
 
-
+/* ======================================================
+   Estilos de Burbujas de Mensaje
+   ====================================================== */
 .message-bubble {
-  max-width: 70%;
-  padding: 10px 15px;
-  border-radius: 20px;
-  word-wrap: break-word;
-  font-size: 15px;
-  line-height: 1.4;
-  position: relative;
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 20px;
+    word-wrap: break-word;
+    font-size: 15px;
+    line-height: 1.4;
+    position: relative; /* Necesario para posicionar las acciones */
 }
 
 .message-bubble.user {
-  background-color: rgb(145,145,255); /* Mantenido tu color RGB exacto */
-  color: white;
-  align-self: flex-end;
-  border-bottom-right-radius: 5px;
+    background-color: rgb(145,145,255);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
 }
 
 .message-bubble.bot {
-  background-color: #e0e0e0;
-  color: #333;
-  align-self: flex-start;
-  border-bottom-left-radius: 5px;
+    background-color: #e0e0e0;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
 }
 
-/* ESTILOS PARA LAS ACCIONES DEL MENSAJE (FEEDBACK, COPIAR, ETC.) */
+/* ======================================================
+   Estilos para las Acciones del Mensaje (Feedback, Copiar, etc.)
+   ====================================================== */
 .message-actions {
-  display: flex;
-  gap: 5px;
-  margin-top: 10px;
-  position: absolute;
-  bottom: -30px;
-  left: 0;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 5px;
-  padding: 3px 5px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  z-index: 10;
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+    position: absolute;
+    bottom: -30px; /* Ajusta esto para la posición debajo de la burbuja */
+    left: 0;
+    opacity: 0; /* Oculto por defecto */
+    transition: opacity 0.2s ease;
+    pointer-events: none; /* No interactuable por defecto */
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 3px 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    z-index: 10;
 }
 
 /* Muestra las acciones al hacer hover sobre la burbuja del bot */
 .message-bubble.bot:hover .message-actions {
-  opacity: 1;
-  pointer-events: auto;
+    opacity: 1;
+    pointer-events: auto; /* Permite interacción al hacer hover */
 }
 
 .action-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  color: #555;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .action-button:hover {
-  background-color: #f0f0f0;
-  color: #000;
+    background-color: #f0f0f0;
+    color: #000;
 }
 
 .action-button svg {
-  width: 18px;
-  height: 18px;
+    width: 18px;
+    height: 18px;
 }
 
-/* FIN ESTILOS DE ACCIONES */
-
-
+/* ======================================================
+   Estilos de la Área de Entrada de Mensajes
+   ====================================================== */
 .message-input-area {
-  display: flex;
-  align-items: flex-end;
-  padding: 15px 20px;
-  border-top: 1px solid #e0e0e0;
-  background-color: #fff;
+    display: flex;
+    align-items: flex-end;
+    padding: 15px 20px;
+    border-top: 1px solid #e0e0e0;
+    background-color: #fff;
 }
 
 .message-textarea {
-  flex-grow: 1;
-  padding: 10px 15px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  font-size: 16px;
-  resize: none;
-  min-height: 40px;
-  max-height: 120px;
-  overflow-y: auto;
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 16px;
+    resize: none;
+    min-height: 40px;
+    max-height: 120px;
+    overflow-y: auto;
 }
 
 .message-textarea:focus {
-  outline: none;
-  border-color: #007bff; /* Mantenido tu color original */
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* Mantenido tu color original */
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .send-button {
-  background-color: rgb(145,145,255); /* Mantenido tu color RGB exacto */
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  margin-left: 15px;
-  margin-bottom: 10px;
-  transition: background-color 0.2s ease;
-  flex-shrink: 0;
+    background-color: rgb(145,145,255);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 15px;
+    margin-bottom: 10px;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
 }
 
 .send-button:hover {
-  background-color: #6A6AD3; /* Mantenido tu color de hover exacto */
+    background-color: #6A6AD3;
 }
 
 .send-button svg {
-  width: 100px; /* Mantenido tu ancho exacto */
-  height: 40px; /* Mantenido tu alto exacto */
-  margin-left: 1px; /* Mantenido tu margen exacto */
+    width: 100px; /* Esto parece un valor muy grande para un SVG de 24x24, ¿quizás era 20px? */
+    height: 40px; /* Igual, ¿quizás era 20px? Si el SVG es de 24x24, mejor usar 24px */
+    margin-left: 1px;
 }
 
 .input-hint {
-  font-size: 12px;
-  color: #888;
-  text-align: center;
-  padding-bottom: 10px;
-  background-color: #fff;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+    padding-bottom: 10px;
+    background-color: #fff;
 }
 
 .empty-chat-content{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Ubuntu', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Ubuntu', sans-serif;
 }
 
 .empty-chat-content p{
-  margin-top: 100px;
-  margin-bottom: 50px;
-  font-family: 'Ubuntu', sans-serif;
-  font-size: 1.2em;
+    margin-top: 100px;
+    margin-bottom: 50px;
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 1.2em;
 }
 
-/* ******************************************************
+/* ======================================================
    Dark Mode for ChatWindow
-   ****************************************************** */
+   ====================================================== */
 body.dark .chat-window {
-  background-color: #212121;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    background-color: #212121;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 body.dark .header {
-  background-color: #1e1e1e;
-  border-bottom-color: #333;
+    background-color: #1e1e1e;
+    border-bottom-color: #333;
 }
 body.dark .chat-title-display,
 body.dark .settings-icon {
-  color: #f8f8f2;
+    color: #f8f8f2;
 }
 
 body.dark .welcome-content h1,
 body.dark .welcome-content p {
-  color: #aaa;
+    color: #aaa;
 }
 
 body.dark .message-bubble.bot {
-  background-color: #3a3a3a;
-  color: #f8f8f2;
+    background-color: #3a3a3a;
+    color: #f8f8f2;
 }
 body.dark .message-bubble.user {
-  /* CAMBIO AQUI: Usando el violeta neón para la burbuja de usuario en Dark Mode */
-  background-color: #A020F0; 
-  color: #f8f8f2; /* Texto claro */
+    background-color: #A020F0; /* Violeta neón */
+    color: #f8f8f2;
 }
 
 /* Dark mode for message actions */
 body.dark .message-actions {
-  background-color: #2a2a2a;
-  border-color: #444;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    background-color: #2a2a2a;
+    border-color: #444;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 body.dark .action-button {
-  color: #bbb;
+    color: #bbb;
 }
 
 body.dark .action-button:hover {
-  background-color: #3a3a3a;
-  color: #fff;
+    background-color: #3a3a3a;
+    color: #fff;
 }
-
 
 body.dark .message-input-area {
-  font-family: 'Ubuntu', sans-serif;
-  background-color: #1e1e1e;
-  border-top-color: #333;
+    font-family: 'Ubuntu', sans-serif;
+    background-color: #1e1e1e;
+    border-top-color: #333;
 }
 body.dark .message-textarea {
-  font-family: 'Ubuntu', sans-serif;
-  background-color: #333;
-  color: #f8f8f2;
-  border-color: #555;
+    font-family: 'Ubuntu', sans-serif;
+    background-color: #333;
+    color: #f8f8f2;
+    border-color: #555;
 }
 body.dark .message-textarea:focus {
-  /* CAMBIO AQUI: Usando el fucsia neón para el focus en Dark Mode */
-  border-color: #FF00FF; 
-  box-shadow: 0 0 0 2px rgba(255, 0, 255, 0.25);
+    border-color: #FF00FF; /* Fucsia neón */
+    box-shadow: 0 0 0 2px rgba(255, 0, 255, 0.25);
 }
 body.dark .send-button {
-  /* CAMBIO AQUI: Usando el fucsia neón para el botón de envío en Dark Mode */
-  background-color: #FF00FF;
-  color: #282c34; /* Color de texto/ícono oscuro para contrastar */
+    background-color: #FF00FF; /* Fucsia neón */
+    color: #282c34;
 }
 body.dark .send-button:hover {
-  /* CAMBIO AQUI: Usando el violeta neón para el hover en Dark Mode */
-  background-color: #A020F0; 
+    background-color: #A020F0; /* Violeta neón */
 }
 body.dark .input-hint {
-  background-color: #1e1e1e;
-  color: #aaa;
+    background-color: #1e1e1e;
+    color: #aaa;
 }
 
-/* ******************************************************
+/* ======================================================
    NUEVOS ESTILOS PARA LOS PROMPTS SUGERIDOS
-   ****************************************************** */
-
-/* Contenedor de los prompts sugeridos */
+   ====================================================== */
 .suggested-prompts-container {
-  display: grid; /* Usamos grid para una disposición de 2x2 */
-  grid-template-columns: repeat(2, 1fr); /* Dos columnas de igual ancho */
-  gap: 15px; /* Espacio entre los cuadritos */
-  margin-top: 40px; /* Separación del texto de bienvenida */
-  max-width: 700px; /* Limita el ancho para que no se extienda demasiado */
-  width: 100%; /* Ocupa el 100% del ancho disponible en su contenedor */
-  padding: 0 20px; /* Padding horizontal para que no se pegue a los bordes */
-  box-sizing: border-box; /* Incluye padding en el ancho */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 40px;
+    max-width: 700px;
+    width: 100%;
+    padding: 0 20px;
+    box-sizing: border-box;
 }
 
-/* Estilo individual para cada cuadrito de prompt */
 .suggested-prompt-box {
-  background-color: #f0f0f0; /* Fondo claro para Light Mode */
-  color: #333; /* Texto oscuro para Light Mode */
-  border: 1px solid #ddd; /* Borde sutil */
-  border-radius: 8px;
-  padding: 15px;
-  text-align: left;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  min-height: 80px; /* Altura mínima para que todos se vean similares */
-  display: flex; /* Para centrar el texto verticalmente si es corto */
-  align-items: center; /* Centrado vertical */
-  line-height: 1.4; /* Espaciado de línea para mejor lectura */
-  font-family: 'Ubuntu', sans-serif; /* Asegura la misma fuente */
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: left;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    line-height: 1.4;
+    font-family: 'Ubuntu', sans-serif;
 }
 
 .suggested-prompt-box:hover {
-  background-color: #e0e0e0; /* Fondo un poco más oscuro al hover en Light Mode */
-  border-color: #bbb; /* Borde más oscuro */
-  transform: translateY(-3px); /* Efecto de elevación sutil */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #e0e0e0;
+    border-color: #bbb;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* --- Dark Mode para los prompts sugeridos --- */
-body.dark .suggested-prompts-box { /* Asegúrate de que el selector sea 'body.dark .suggested-prompt-box' */
-  background-color: #1e1e1e; /* Fondo oscuro */
-  color: #bbb; /* Color de texto secundario oscuro */
-  border: 1px solid #333; /* Borde oscuro */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+body.dark .suggested-prompt-box {
+    background-color: #1e1e1e;
+    color: #bbb;
+    border: 1px solid #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 body.dark .suggested-prompt-box:hover {
-  background-color: #282828; /* Fondo más oscuro al hover */
-  color: #FF00FF; /* ¡Fucsia Neón para el texto al hover! */
-  border-color: #A020F0; /* ¡Violeta Neón para el borde al hover! */
-  box-shadow: 0 4px 15px rgba(160, 32, 240, 0.4); /* Sombra con color neón */
+    background-color: #282828;
+    color: #FF00FF; /* ¡Fucsia Neón para el texto al hover! */
+    border-color: #A020F0; /* ¡Violeta Neón para el borde al hover! */
+    box-shadow: 0 4px 15px rgba(160, 32, 240, 0.4);
 }
 
 /* Ajuste para pantallas más pequeñas (ej. móviles) */
 @media (max-width: 768px) {
-  .suggested-prompts-container {
-    grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
-    padding: 0 15px;
-  }
+    .suggested-prompts-container {
+        grid-template-columns: 1fr;
+        padding: 0 15px;
+    }
+}
+
+/* ======================================================
+   ESTILOS DEL MODAL DE FEEDBACK (NUEVO)
+   ====================================================== */
+.modal-overlay {
+    display: flex; /* Usamos flexbox para centrar el contenido */
+    position: fixed; /* Posición fija en la ventana */
+    z-index: 1000; /* Asegura que esté por encima de todo lo demás */
+    left: 0;
+    top: 0;
+    width: 100%; /* Cubre todo el ancho */
+    height: 100%; /* Cubre toda la altura */
+    overflow: auto; /* Habilita el scroll si el contenido es demasiado grande */
+    background-color: rgba(0,0,0,0.6); /* Fondo semi-transparente oscuro */
+    justify-content: center; /* Centrado horizontal */
+    align-items: center; /* Centrado vertical */
+}
+
+.modal-content {
+    background-color: #2c2c2c; /* Fondo oscuro similar al de Gemini */
+    margin: auto; /* Centrado (aunque flexbox ya lo hace) */
+    padding: 20px;
+    border: 1px solid #444; /* Borde sutil */
+    border-radius: 8px; /* Bordes redondeados */
+    width: 80%; /* Ancho del modal, ajusta según necesidad */
+    max-width: 500px; /* Ancho máximo para que no sea demasiado grande en pantallas amplias */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    position: relative; /* Para posicionar el botón de cerrar */
+    color: #e0e0e0; /* Color de texto claro */
+    font-family: Arial, sans-serif; /* Fuente legible */
+}
+
+.modal-content h2 {
+    color: #fff;
+    margin-top: 0;
+    font-size: 1.4em;
+    text-align: center; /* Centrar el título */
+}
+
+.modal-content p {
+    color: #b0b0b0;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+    text-align: center; /* Centrar la descripción */
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute; /* Posiciona en relación al modal-content */
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Opciones de Feedback */
+.feedback-options {
+    list-style: none; /* Quita los puntos de la lista */
+    padding: 0;
+    margin: 0;
+}
+
+.feedback-options li {
+    background-color: #3a3a3a; /* Fondo para cada opción */
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    color: #e0e0e0;
+    font-size: 1em;
+}
+
+.feedback-options li:hover {
+    background-color: #4a4a4a; /* Cambio de color al pasar el ratón */
+}
+
+/* No necesitamos '.selected' por ahora ya que no hay lógica de selección */
+/* .feedback-options li.selected {
+    background-color: #5a5a5a;
+    border: 1px solid #707070;
+} */
+
+.send-feedback-button {
+    background-color: #4CAF50; /* Un color de botón de acción */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 20px;
+    /* float: right; */ /* Quitado float para centrarlo si se desea, o usar flex */
+    transition: background-color 0.2s ease;
+    display: block; /* Para que ocupe su propia línea */
+    margin-left: auto; /* Centrar el botón */
+    margin-right: auto; /* Centrar el botón */
+}
+
+.send-feedback-button:hover {
+    background-color: #45a049;
+}
+
+/* ======================================================
+   Estilos de Dark Mode para el Modal (NUEVO)
+   ====================================================== */
+body.dark .modal-content {
+    background-color: #1a1a1a; /* Fondo más oscuro para el modal en Dark Mode */
+    border-color: #333;
+    color: #f8f8f2;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+body.dark .modal-content h2 {
+    color: #FF00FF; /* Título en fucsia neón en Dark Mode */
+}
+
+body.dark .modal-content p {
+    color: #ccc;
+}
+
+body.dark .close-button {
+    color: #888;
+}
+
+body.dark .close-button:hover,
+body.dark .close-button:focus {
+    color: #FF00FF; /* Hover de la X en fucsia neón */
+}
+
+body.dark .feedback-options li {
+    background-color: #2a2a2a;
+    color: #f8f8f2;
+}
+
+body.dark .feedback-options li:hover {
+    background-color: #3a3a3a;
+    color: #A020F0; /* Hover de opción en violeta neón */
+}
+
+body.dark .send-feedback-button {
+    background-color: #A020F0; /* Botón de enviar en violeta neón en Dark Mode */
+    color: #f8f8f2;
+}
+
+body.dark .send-feedback-button:hover {
+    background-color: #FF00FF; /* Hover del botón en fucsia neón */
+}
+
+/* --- Estilos para el Modal de Feedback --- */
+
+/* Estilo para la lista de opciones */
+.feedback-options {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+/* Estilo para cada opción individual */
+.feedback-options li {
+    padding: 10px 15px;
+    border: 1px solid #555;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* Estilo al pasar el mouse por encima */
+.feedback-options li:hover {
+    background-color: #3a3a3a;
+}
+
+/* ESTA ES LA CLASE QUE FALTA: Estilo para la opción SELECCIONADA */
+.feedback-options li.selected {
+    background-color: #007bff; /* Color de fondo para resaltar */
+    color: #ffffff;             /* Color del texto */
+    border-color: #0056b3;     /* Color del borde */
 }

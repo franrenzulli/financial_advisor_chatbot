@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // Importamos Router
-import Sidebar from './Sidebar'; // Estos son componentes de la página de chat
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Sidebar from './Sidebar';
 import ChatWindow from './ChatWindow';
-import SettingsPanel from './SettingsPanel'; // El panel de configuración se muestra sobre cualquier ruta
-import HomePage from './HomePage'; // Importamos la nueva HomePage
+import SettingsPanel from './SettingsPanel';
+import HomePage from './HomePage';
 import './App.css';
 
 // Componente Wrapper para la página del Chat
-// Este componente encapsula Sidebar y ChatWindow, que siempre van juntos.
 function ChatPage({
   chats, currentChatId, isSidebarExpanded,
   handleSelectChat, handleNewChat, handleDeleteChat,
   handleSendMessage, toggleSidebarExpansion, openSettingsPanel
 }) {
-  const currentChat = chats.find(chat => chat.id === currentChatId); // currentChat se deriva aquí, no se pasa como prop
+  const currentChat = chats.find(chat => chat.id === currentChatId);
 
   return (
     <div className="app-container">
@@ -28,7 +27,7 @@ function ChatPage({
         onOpenSettings={openSettingsPanel}
       />
       <ChatWindow
-        currentChat={currentChat} // currentChat se pasa aquí
+        currentChat={currentChat}
         onSendMessage={handleSendMessage}
       />
     </div>
@@ -83,6 +82,7 @@ function App() {
     }
   };
 
+  // --- ESTA ES LA FUNCIÓN CORREGIDA ---
   const handleSendMessage = async (messageText) => {
     const currentChatForSend = chats.find(chat => chat.id === currentChatId);
     if (!currentChatForSend) return;
@@ -114,24 +114,24 @@ function App() {
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
 
-      const newMessages = [];
-      if (data.answer) {
-        newMessages.push({ text: data.answer, sender: 'bot' });
-      }
-
-      if (data.retrieved_chunks && data.retrieved_chunks.length > 0) {
-        newMessages.push({
-          text: `🔍 *Fuentes recuperadas:*\n\n${data.retrieved_chunks.map((c, i) => `Chunk ${i + 1}:\n${c}`).join('\n\n')}`,
+      // Creamos un solo mensaje para el bot que contiene la respuesta Y las fuentes.
+      const newBotMessage = {
+          text: data.answer || "No se recibió respuesta.",
           sender: 'bot',
-        });
-      }
+          // Guardamos el array de chunks en una nueva propiedad 'sources'
+          sources: data.retrieved_chunks || [] 
+      };
 
       setChats(prevChats =>
         prevChats.map(chat =>
           chat.id === currentChatId
-            ? { ...chat, messages: [...updatedUserMessages, ...newMessages] }
+            ? { ...chat, messages: [...updatedUserMessages, newBotMessage] }
             : chat
         )
       );
@@ -144,7 +144,7 @@ function App() {
                 ...chat,
                 messages: [
                   ...updatedUserMessages,
-                  { text: '❌ Hubo un error al obtener respuesta del servidor.', sender: 'bot' },
+                  { text: '❌ Hubo un error al obtener respuesta del servidor.', sender: 'bot', sources: [] },
                 ],
               }
             : chat
@@ -152,6 +152,7 @@ function App() {
       );
     }
   };
+  // --- FIN DE LA FUNCIÓN CORREGIDA ---
 
   const toggleSidebarExpansion = () => {
     setIsSidebarExpanded(!isSidebarExpanded);
@@ -170,9 +171,9 @@ function App() {
   };
 
   return (
-    <Router> {/* Envolvemos toda la aplicación en BrowserRouter */}
-      <Routes> {/* Definimos las diferentes rutas */}
-        <Route path="/" element={<HomePage />} /> {/* Página de Inicio */}
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
         <Route
           path="/chat"
           element={
@@ -188,10 +189,9 @@ function App() {
               openSettingsPanel={openSettingsPanel}
             />
           }
-        /> {/* Página del Chat */}
+        />
       </Routes>
 
-      {/* El panel de configuración se muestra sobre CUALQUIER ruta si está activo */}
       {showSettingsPanel && (
         <SettingsPanel
           onClose={closeSettingsPanel}
