@@ -11,7 +11,7 @@ AWS_REGION = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
 PREFIX = os.getenv("PREFIX")
 
 # Configuración de archivos y directorios
-VECTOR_DIR = "/app/vector-store"
+CHROMA_PERSIST_DIR = "/app/vector-store" 
 PROCESSED_FILES_PATH = "ingestion/processed_pdfs.txt"
 PROBLEMATIC_FILES_PATH = "ingestion/problematic_files.txt"
 LOG_FILE_PATH = "ingestion/pdf_processing.log"
