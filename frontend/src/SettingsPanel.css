@@ -32,12 +32,31 @@
   margin-bottom: 20px;
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
+  position: relative;
 }
 
 .settings-panel-header h2 {
   margin: 0;
   font-size: 20px;
   color: #333;
+}
+
+.close-button {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+
+.signOut-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  font-size: 15px;
+  cursor: pointer;
+  color: #555;
+  transition: color 0.2s ease;
+  background-color: tomato;
+  margin-top: 10px;
 }
 
 .settings-panel .close-button {

@@ -10,7 +10,8 @@ import './App.css';
 function ChatPage({
   chats, currentChatId, isSidebarExpanded,
   handleSelectChat, handleNewChat, handleDeleteChat,
-  handleSendMessage, toggleSidebarExpansion, openSettingsPanel
+  handleSendMessage, toggleSidebarExpansion, openSettingsPanel,
+  user, setUser
 }) {
   const currentChat = chats.find(chat => chat.id === currentChatId);
 
@@ -25,6 +26,8 @@ function ChatPage({
         onToggleSidebar={toggleSidebarExpansion}
         isExpanded={isSidebarExpanded}
         onOpenSettings={openSettingsPanel}
+        user={user}
+        setUser={setUser}
       />
       <ChatWindow
         currentChat={currentChat}
@@ -43,6 +46,7 @@ function App() {
   ]);
   const [currentChatId, setCurrentChatId] = useState('1');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [user, setUser] = useState(null);
 
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'light';
@@ -187,6 +191,8 @@ function App() {
               handleSendMessage={handleSendMessage}
               toggleSidebarExpansion={toggleSidebarExpansion}
               openSettingsPanel={openSettingsPanel}
+              user={user}
+              setUser={setUser}
             />
           }
         />
@@ -197,6 +203,8 @@ function App() {
           onClose={closeSettingsPanel}
           currentTheme={theme}
           onToggleTheme={toggleTheme}
+          user={user}
+          setUser={setUser}
         />
       )}
     </Router>
