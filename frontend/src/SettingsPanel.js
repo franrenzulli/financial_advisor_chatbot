@@ -1,7 +1,15 @@
-import React from 'react';
-import './SettingsPanel.css'; // Crearás este archivo CSS a continuación
+import "./SettingsPanel.css"; // Crearás este archivo CSS a continuación
+import { auth, signOut } from "./firebase";
 
-function SettingsPanel({ onClose, currentTheme, onToggleTheme }) {
+function SettingsPanel({ onClose, currentTheme, onToggleTheme, user, setUser }) {
+  const handleLogout = () => {
+    signOut(auth)
+      .then(() => {
+        setUser(null)
+        onClose();
+      })
+      .catch((err) => console.error("Error al cerrar sesión:", err));
+  };
   return (
     <div className="settings-panel-overlay">
       <div className="settings-panel">
@@ -17,13 +25,19 @@ function SettingsPanel({ onClose, currentTheme, onToggleTheme }) {
             <label className="switch">
               <input
                 type="checkbox"
-                checked={currentTheme === 'dark'}
+                checked={currentTheme === "dark"}
                 onChange={onToggleTheme}
               />
               <span className="slider round"></span>
             </label>
           </div>
-          {/* Puedes añadir más opciones de configuración aquí */}
+          {user && (
+            <div>
+              <button className="signOut-button" onClick={handleLogout}>
+                Cerrar sesión
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
