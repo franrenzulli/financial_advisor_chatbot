@@ -1,46 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./Sidebar.css";
 import Login from "./modules/login/components/Login";
-import { auth } from "./firebase";
-import { onAuthStateChanged } from "firebase/auth";
 
-// Asegúrate de que onOpenSettings se desestructure de las props
 function Sidebar({
   chats,
   onSelectChat,
   onNewChat,
   onDeleteChat,
   currentChatId,
-  onToggleSidebar,
+  onToggleSidebar, // <-- Asegúrate de que esta prop esté aquí
   isExpanded,
   onOpenSettings,
   user,
   setUser
 }) {
   const [hoveredChatId, setHoveredChatId] = useState(null);
-  const [loading, setLoading] = useState(true); // opcional: para mostrar loader mientras verifica
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser({
-          name: user.displayName,
-          email: user.email,
-          photo: user.photoURL
-        });
-      } else {
-        setUser(null);
-      }
-      setLoading(false); // Ya terminó de verificar
-    });
-
-    // 🔁 Limpia el listener cuando el componente se desmonte
-    return () => unsubscribe();
-  }, []);
-
-  if (loading) return <p>Cargando...</p>;
-
-  // Función para simular el inicio de sesión genérico (mantenida si la necesitas, aunque el botón se eliminó)
 
   return (
     <div className={`sidebar ${isExpanded ? "expanded" : "collapsed"}`}>
@@ -75,23 +49,18 @@ function Sidebar({
             />
           </svg>
         </button>
-        {/* Solo muestra el texto "Financial Advisor Chatbot" si está expandido */}
         {isExpanded && (
           <span className="sidebar-header-text">Financial Advisor Chatbot</span>
         )}
       </div>
 
-      {/* Todo este contenido se muestra solo si está expandido */}
       {isExpanded && (
         <>
-          {/* NUEVA SECCIÓN: Botones de inicio de sesión */}
           {!user && (
             <div className="login-buttons-container">
               <Login />
             </div>
           )}
-          {/* FIN NUEVA SECCIÓN */}
-
           <div className="new-chat-button-container">
             <button className="new-chat-button" onClick={onNewChat}>
               + Nuevo chat
@@ -129,12 +98,9 @@ function Sidebar({
               </li>
             ))}
           </ul>
-
           <div className="sidebar-footer">
-            {/* Aquí el onClick para abrir el panel de configuración */}
             <div className="configuration-link" onClick={onOpenSettings}>
               {" "}
-              {/* <--- CAMBIO CLAVE AQUÍ */}
               ⚙️ Configuración
             </div>
           </div>

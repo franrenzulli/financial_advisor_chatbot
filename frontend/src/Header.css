@@ -21,3 +21,15 @@
 .settings-icon:hover {
   color: rgb(145,145,255);
 }
+
+.user-profile-pic {
+  width: 32px; /* o el tamaño que prefieras */
+  height: 32px;
+  border-radius: 50%; /* Para que sea redonda */
+  cursor: pointer; /* Para indicar que se puede hacer clic en ella */
+}
+
+.user-icon {
+  width: 28px;   /* O el tamaño que prefieras */
+  height: 30px;  /* Mantén el mismo valor para que sea un círculo o cuadrado perfecto */
+}

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './Sidebar';
+// Eliminamos la importación del Header de aquí
 import ChatWindow from './ChatWindow';
 import SettingsPanel from './SettingsPanel';
 import HomePage from './HomePage';
 import './App.css';
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
 
 // Componente Wrapper para la página del Chat
 function ChatPage({
@@ -32,11 +35,13 @@ function ChatPage({
       <ChatWindow
         currentChat={currentChat}
         onSendMessage={handleSendMessage}
+        user={user} // Pasamos la prop user al ChatWindow
+        onOpenSettings={openSettingsPanel} // Pasamos la función para abrir las configuraciones
+        onToggleSidebar={toggleSidebarExpansion} // Pasamos la función para el menú
       />
     </div>
   );
 }
-
 
 function App() {
   const [chats, setChats] = useState([
@@ -47,6 +52,23 @@ function App() {
   const [currentChatId, setCurrentChatId] = useState('1');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser({
+          name: user.displayName,
+          email: user.email,
+          photo: user.photoURL,
+        });
+      } else {
+        setUser(null);
+      }
+      setLoadingUser(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'light';
@@ -61,7 +83,6 @@ function App() {
   const handleSelectChat = (chatId) => {
     setCurrentChatId(chatId);
   };
-
   const handleNewChat = () => {
     const newChatId = String(Date.now());
     const newChat = {
@@ -73,7 +94,6 @@ function App() {
     setCurrentChatId(newChatId);
     setIsSidebarExpanded(true);
   };
-
   const handleDeleteChat = (chatIdToDelete) => {
     const updatedChats = chats.filter(chat => chat.id !== chatIdToDelete);
     setChats(updatedChats);
@@ -86,7 +106,6 @@ function App() {
     }
   };
 
-  // --- ESTA ES LA FUNCIÓN CORREGIDA ---
   const handleSendMessage = async (messageText) => {
     const currentChatForSend = chats.find(chat => chat.id === currentChatId);
     if (!currentChatForSend) return;
@@ -94,7 +113,6 @@ function App() {
     const newUserMessage = { text: messageText, sender: 'user' };
     const updatedUserMessages = [...currentChatForSend.messages, newUserMessage];
 
-    // Mostrar mensaje del usuario de inmediato
     setChats(prevChats =>
       prevChats.map(chat =>
         chat.id === currentChatId
@@ -124,12 +142,10 @@ function App() {
 
       const data = await response.json();
 
-      // Creamos un solo mensaje para el bot que contiene la respuesta Y las fuentes.
       const newBotMessage = {
-          text: data.answer || "No se recibió respuesta.",
-          sender: 'bot',
-          // Guardamos el array de chunks en una nueva propiedad 'sources'
-          sources: data.retrieved_chunks || [] 
+        text: data.answer || "No se recibió respuesta.",
+        sender: 'bot',
+        sources: data.retrieved_chunks || []
       };
 
       setChats(prevChats =>
@@ -156,23 +172,23 @@ function App() {
       );
     }
   };
-  // --- FIN DE LA FUNCIÓN CORREGIDA ---
 
   const toggleSidebarExpansion = () => {
     setIsSidebarExpanded(!isSidebarExpanded);
   };
-
   const openSettingsPanel = () => {
     setShowSettingsPanel(true);
   };
-
   const closeSettingsPanel = () => {
     setShowSettingsPanel(false);
   };
-
   const toggleTheme = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
+
+  if (loadingUser) {
+    return <div className="loading-state">Cargando usuario...</div>;
+  }
 
   return (
     <Router>
@@ -197,7 +213,6 @@ function App() {
           }
         />
       </Routes>
-
       {showSettingsPanel && (
         <SettingsPanel
           onClose={closeSettingsPanel}

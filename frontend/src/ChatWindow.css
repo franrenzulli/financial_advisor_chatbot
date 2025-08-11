@@ -543,3 +543,35 @@ body.dark .send-feedback-button:hover {
     color: #ffffff;             /* Color del texto */
     border-color: #0056b3;     /* Color del borde */
 }
+
+.message-bubble.bot h1,
+.message-bubble.bot h2,
+.message-bubble.bot h3 {
+  margin: .5em 0;
+  font-weight: 700;
+}
+
+.message-bubble.bot p { margin: .5em 0; }
+
+.message-bubble.bot ul,
+.message-bubble.bot ol {
+  padding-left: 1.5em;
+  margin: .5em 0;
+}
+
+.message-bubble.bot li { margin-bottom: .3em; }
+
+.message-bubble.bot code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: .95em;
+  background: rgba(0,0,0,.05);
+  padding: .1em .3em;
+  border-radius: 4px;
+}
+
+.message-bubble.bot pre {
+  padding: .8em 1em;
+  overflow: auto;
+  background: rgba(0,0,0,.06);
+  border-radius: 8px;
+}
