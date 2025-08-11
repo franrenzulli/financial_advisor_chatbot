@@ -6,7 +6,61 @@ import ReactMarkdown from 'react-markdown';
 
 // Componente Modal... (el resto del código es el mismo)
 function FeedbackModal({ isOpen, onClose, onSubmit, message }) {
-  // ... (tu código del modal)
+  const [selectedOption, setSelectedOption] = useState('');
+  const [otherDetails, setOtherDetails] = useState('');
+
+  if (!isOpen) return null;
+
+  const feedbackOptions = [
+    "Información incorrecta",
+    "No ha seguido las instrucciones",
+    "Ofensiva o inapropiada",
+    "Idioma incorrecto",
+  ];
+
+  const handleSubmit = () => {
+    const details = selectedOption === 'Otra' ? otherDetails : selectedOption;
+
+    if (details && details.trim()) {
+      onSubmit(message, details);
+      onClose();
+    } else {
+      alert("Por favor, selecciona una opción o escribe un detalle en 'Otra'.");
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <span className="close-button" onClick={onClose}>&times;</span>
+        <h2>¿Qué problema has tenido?</h2>
+        <p>Tus comentarios nos ayudan a mejorar la aplicación.</p>
+
+        <ul className="feedback-options">
+          {feedbackOptions.map((option, index) => (
+            <li key={index} onClick={() => setSelectedOption(option)} className={selectedOption === option ? 'selected' : ''}>
+              {option}
+            </li>
+          ))}
+          <li onClick={() => setSelectedOption('Otra')} className={selectedOption === 'Otra' ? 'selected' : ''}>
+            Otra
+          </li>
+        </ul>
+
+        {selectedOption === 'Otra' && (
+          <textarea
+            className="feedback-textarea"
+            placeholder="Por favor, danos más detalles..."
+            value={otherDetails}
+            onChange={(e) => setOtherDetails(e.target.value)}
+            autoFocus
+          />
+        )}
+
+        <button className="send-feedback-button" onClick={handleSubmit}>Enviar Comentarios</button>
+      </div>
+    </div>
+  );
 }
 
 function ChatWindow({ currentChat, onSendMessage, user, onOpenSettings }) {
@@ -106,21 +160,28 @@ function ChatWindow({ currentChat, onSendMessage, user, onOpenSettings }) {
       })
       .catch(err => console.error("Error al copiar: ", err));
   };
+  
+  // Condicionales para el renderizado
+  const showWelcomeMessage = currentChat && currentChat.messages.length === 0;
+  const isChatEmpty = !currentChat;
 
   return (
     <div className="chat-window">
-      {/* Header del chat, se renderiza siempre */}
       <Header
-        chatTitle={currentChat ? currentChat.title : "Financial Advisor Chatbot"}
+        chatTitle={isChatEmpty ? "Financial Advisor Chatbot" : currentChat.title}
         user={user}
         onOpenSettings={onOpenSettings}
       />
 
-      {/* Contenido principal del chat, se renderiza condicionalmente */}
-      {currentChat ? (
-        <>
-          <div className="messages-container">
-            {currentChat.messages.length === 0 ? (
+      <div className="messages-container">
+        {isChatEmpty ? (
+          <div className="empty-chat-content">
+            <p>Selecciona un chat existente a la izquierda o crea uno nuevo para comenzar a interactuar.</p>
+            <img src={vector2Image} alt="Asistente Virtual Original" className="empty-chat-image" />
+          </div>
+        ) : (
+          <>
+            {showWelcomeMessage ? (
               <div className="welcome-message-overlay">
                 <div className="welcome-content">
                   <h1>¡Hola! Soy tu asesor financiero virtual.</h1>
@@ -149,6 +210,7 @@ function ChatWindow({ currentChat, onSendMessage, user, onOpenSettings }) {
                     ) : (
                       cleanedMessageText
                     )}
+
                     {message.sender === 'bot' && message.sources && message.sources.length > 0 && (
                       <div className="sources-container">
                         <hr />
@@ -174,41 +236,41 @@ function ChatWindow({ currentChat, onSendMessage, user, onOpenSettings }) {
               })
             )}
             <div ref={messagesEndRef} />
-          </div>
+          </>
+        )}
+      </div>
 
-          <div className="message-input-area">
-            <textarea
-              className="message-textarea"
-              placeholder="Escribe tu mensaje..."
-              value={messageInput}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              rows="1"
-            />
-            <button className="send-button" onClick={handleSendMessage}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-              </svg>
-            </button>
-          </div>
-          <div className="input-hint">
-            Presiona Enter para envío; Shift + Enter para mas líneas
-          </div>
-
-          <FeedbackModal
-            isOpen={isFeedbackModalOpen}
-            onClose={() => setIsFeedbackModalOpen(false)}
-            onSubmit={(message, details) => submitFeedback(message, 'dislike', details)}
-            message={feedbackTarget}
+      {/* Input area, solo visible si hay un chat seleccionado */}
+      {!isChatEmpty && (
+        <div className="message-input-area">
+          <textarea
+            className="message-textarea"
+            placeholder="Escribe tu mensaje..."
+            value={messageInput}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+            rows="1"
           />
-        </>
-      ) : (
-        // Si no hay un chat seleccionado, mostramos este contenido
-        <div className="empty-chat-content">
-          <p>Selecciona un chat existente a la izquierda o crea uno nuevo para comenzar a interactuar.</p>
-          <img src={vector2Image} alt="Asistente Virtual Original" className="empty-chat-image" />
+          <button className="send-button" onClick={handleSendMessage}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
         </div>
       )}
+      {!isChatEmpty && (
+        <div className="input-hint">
+          Presiona Enter para envío; Shift + Enter para mas líneas
+        </div>
+      )}
+
+      {/* MODAL FUERA DE CUALQUIER CONDICIONAL */}
+      <FeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+        onSubmit={(message, details) => submitFeedback(message, 'dislike', details)}
+        message={feedbackTarget}
+      />
     </div>
   );
 }

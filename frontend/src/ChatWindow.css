@@ -448,7 +448,7 @@ body.dark .suggested-prompt-box:hover {
 } */
 
 .send-feedback-button {
-    background-color: #4CAF50; /* Un color de botón de acción */
+    background-color:rgb(145,145,255); /* Un color de botón de acción */
     color: white;
     padding: 10px 20px;
     border: none;
@@ -464,7 +464,7 @@ body.dark .suggested-prompt-box:hover {
 }
 
 .send-feedback-button:hover {
-    background-color: #45a049;
+    background-color:  rgb(112, 112, 218);;
 }
 
 /* ======================================================
