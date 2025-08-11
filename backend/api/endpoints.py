@@ -34,14 +34,11 @@ class FeedbackPayload(BaseModel):
 @router.post("/ask")
 async def ask(request: QuestionRequest):
     try:
-        # Si la pregunta es muy corta (una o dos palabras), la transformamos en una pregunta real
-        # para los modelos de lenguaje.
         question_for_llms = request.question
         if len(request.question.split()) <= 2:
             question_for_llms = f"Explica en detalle qué es y cuáles son las características de: '{request.question}'"
             print(f"Pregunta original transformada a: '{question_for_llms}'")
 
-        # La búsqueda inicial en la BD se sigue haciendo con la pregunta original y corta
         route = route_question(request.question) 
         print(f"Ruta decidida: {route}")
 
@@ -55,7 +52,6 @@ async def ask(request: QuestionRequest):
             chunks = retrieve_chunks(request.question, top_k=3)
             retrieved_chunks_for_response = chunks
 
-            # Usamos la pregunta transformada para el evaluador y el generador
             if are_chunks_sufficient(question_for_llms, chunks):
                 print("Los chunks son suficientes. Usando RAG.")
                 bot_answer = generate_rag_answer(question_for_llms, chunks, request.chat_history)
@@ -65,8 +61,8 @@ async def ask(request: QuestionRequest):
 
         return {
             "question": request.question,
-            "answer": bot_answer,
-            "retrieved_chunks": retrieved_chunks_for_response
+            "answer": (bot_answer or "").strip(),
+            "retrieved_chunks": serialize_chunks(retrieved_chunks_for_response),
         }
 
     except Exception as e:
@@ -77,7 +73,8 @@ async def ask(request: QuestionRequest):
 @router.post("/feedback")
 async def handle_feedback(payload: FeedbackPayload, db: Session = Depends(get_db)):
     try:
-        chunks_str = json.dumps(payload.retrieved_chunks)
+        chunks_str = json.dumps(payload.retrieved_chunks or [])
+
         new_feedback = FeedbackLog(
             chat_id=payload.chat_id,
             question=payload.question,
@@ -94,3 +91,12 @@ async def handle_feedback(payload: FeedbackPayload, db: Session = Depends(get_db
         db.rollback()
         print(f"ERROR CRÍTICO EN EL ENDPOINT /feedback: {e}")
         raise HTTPException(status_code=500, detail="No se pudo guardar el feedback en la DB.")
+    
+def serialize_chunks(chunks):
+    def _one(c):
+        # Ajusta estos campos según lo que uses en el frontend
+        return {
+            "page_content": getattr(c, "page_content", None),
+            "metadata": getattr(c, "metadata", None),
+        }
+    return [_one(c) for c in chunks or []]

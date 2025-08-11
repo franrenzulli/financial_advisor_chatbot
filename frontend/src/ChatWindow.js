@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Header from './Header';
 import './ChatWindow.css';
 import vector2Image from './img/vector2.PNG';
+import ReactMarkdown from 'react-markdown';
 
 // --- COMPONENTE MODAL ---
 function FeedbackModal({ isOpen, onClose, onSubmit, message }) {
@@ -204,7 +205,11 @@ function ChatWindow({ currentChat, onSendMessage }) {
 
                     return (
                         <div key={index} className={`message-bubble ${message.sender}`}>
-                            {cleanedMessageText}
+                            {message.sender === 'bot' ? (
+                                <ReactMarkdown>{cleanedMessageText}</ReactMarkdown>
+                            ) : (
+                                cleanedMessageText
+                            )}
 
                             {/* --- CÓDIGO AÑADIDO PARA MOSTRAR LAS FUENTES --- */}
                             {message.sender === 'bot' && message.sources && message.sources.length > 0 && (
