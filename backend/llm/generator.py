@@ -6,8 +6,9 @@ from typing import List, Dict, Optional
 try:
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
     # Un modelo potente para RAG y uno más rápido para fallback
+    generation_config = {"response_mime_type": "text/plain"}
     rag_model = genai.GenerativeModel('gemini-1.5-pro-latest')
-    fallback_model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    fallback_model = genai.GenerativeModel('gemini-1.5-flash-latest', generation_config=generation_config)
 except Exception as e:
     print(f"Error al configurar la API de Gemini: {e}")
     rag_model = None
@@ -41,6 +42,14 @@ def generate_rag_answer(question: str, chunks: list, chat_history: Optional[List
     Eres un asistente financiero experto. Tu tarea es responder la 'Pregunta actual' del usuario basándote ESTRICTA y ÚNICAMENTE en los 'Chunks de contexto' proporcionados.
     Mantén la coherencia con el 'Historial de conversación'.
     Si la respuesta no se encuentra en el contexto, indícalo claramente. No uses conocimiento externo.
+
+    FORMATO (OBLIGATORIO):
+    - Responde en **Markdown** limpio.
+    - Usa títulos (`##`), listas con viñetas y numeradas cuando ayude.
+    - Pon en **negrita** conceptos clave.
+    - Mantén párrafos con líneas en blanco entre secciones.
+    - Si hay pasos o recomendaciones, usa listas.
+    - Si incluyes código/consultas, usa bloque con triple backticks.
 
     ---
     HISTORIAL DE CONVERSACIÓN:
@@ -76,6 +85,11 @@ def generate_fallback_answer(question: str, chat_history: Optional[List[Dict[str
     Eres un asistente conversacional experto en finanzas.
     IMPORTANTE: Si te preguntan algo sobre finanzas que requiera datos muy específicos, recientes o consejo financiero y no estás 100% seguro de la respuesta, DEBES NEGARTE a responder. En su lugar, di: 'Sobre ese tema financiero específico, no tengo la información suficiente para dar una respuesta precisa. Te recomiendo consultar a un asesor.'
     Para preguntas generales (saludos, quién eres, etc.), responde con normalidad.
+
+    FORMATO (OBLIGATORIO):
+    - Responde en **Markdown** limpio.
+    - Usa `##` para títulos, listas y **negritas** para resaltar puntos clave.
+    - Párrafos separados por líneas en blanco.
 
     ---
     HISTORIAL DE CONVERSACIÓN:
