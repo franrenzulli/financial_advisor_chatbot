@@ -1,0 +1,15 @@
+langchain
+langchain-community
+langchain-openai
+langchain-chroma
+langchain_huggingface
+sqlalchemy
+chromadb
+openai
+python-dotenv==1.0.1
+sentence-transformers
+pypdf==4.2.0
+pydantic
+boto3==1.34.122
+google-generativeai
+PyMuPDF==1.24.2

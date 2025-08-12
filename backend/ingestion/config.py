@@ -12,9 +12,9 @@ PREFIX = os.getenv("PREFIX")
 
 # Configuración de archivos y directorios
 CHROMA_PERSIST_DIR = "/app/vector-store" 
-PROCESSED_FILES_PATH = "ingestion/processed_pdfs.txt"
-PROBLEMATIC_FILES_PATH = "ingestion/problematic_files.txt"
-LOG_FILE_PATH = "ingestion/pdf_processing.log"
+PROCESSED_FILES_PATH = "processed_pdfs.txt"
+PROBLEMATIC_FILES_PATH = "problematic_files.txt"
+LOG_FILE_PATH = "pdf_processing.log"
 
 # Configuración de procesamiento
 WORKERS = int(os.getenv("WORKERS", 4))
