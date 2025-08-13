@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './Sidebar';
-// Eliminamos la importación del Header de aquí
 import ChatWindow from './ChatWindow';
 import SettingsPanel from './SettingsPanel';
 import HomePage from './HomePage';
@@ -35,40 +34,80 @@ function ChatPage({
       <ChatWindow
         currentChat={currentChat}
         onSendMessage={handleSendMessage}
-        user={user} // Pasamos la prop user al ChatWindow
-        onOpenSettings={openSettingsPanel} // Pasamos la función para abrir las configuraciones
-        onToggleSidebar={toggleSidebarExpansion} // Pasamos la función para el menú
+        user={user}
+        onOpenSettings={openSettingsPanel}
+        onToggleSidebar={toggleSidebarExpansion}
       />
     </div>
   );
 }
 
+// ✅ 1. Definimos los chats de ejemplo fuera del componente
+const exampleChats = [
+  { id: '1', title: 'Mi primer chat', messages: [] },
+];
+
 function App() {
-  const [chats, setChats] = useState([
-    { id: '1', title: 'Mi primer chat', messages: [] },
-    { id: '2', title: 'Ayuda con Javascript', messages: [{ text: 'Necesito ayuda con Javascript.', sender: 'user' }] },
-    { id: '3', title: 'Consejos de diseño', messages: [{ text: '¿Qué quieres crear en este cuadro?', sender: 'user' }] },
-  ]);
+  // ✅ 2. Inicializamos el estado con los chats de ejemplo
+  const [chats, setChats] = useState(exampleChats);
   const [currentChatId, setCurrentChatId] = useState('1');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
+  // useEffect para la autenticación
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+        localStorage.setItem('firebaseUserId', user.uid);
         setUser({
+          uid: user.uid,
           name: user.displayName,
           email: user.email,
           photo: user.photoURL,
         });
+        // La carga de chats reales se maneja en el siguiente useEffect
       } else {
+        localStorage.removeItem('firebaseUserId');
         setUser(null);
+        // ✅ 3. RESTAURAMOS LOS CHATS DE EJEMPLO AL CERRAR SESIÓN
+        setChats(exampleChats);
+        setCurrentChatId(exampleChats.length > 0 ? exampleChats[0].id : null);
       }
       setLoadingUser(false);
     });
     return () => unsubscribe();
   }, []);
+
+  // useEffect para cargar los chats del usuario logueado
+  useEffect(() => {
+    if (!user) {
+      return; // Si no hay usuario, no hacemos nada (se quedan los de ejemplo)
+    }
+
+    const fetchChats = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/chats/${user.uid}`);
+        if (!response.ok) {
+          throw new Error('Error al cargar los chats del servidor');
+        }
+        const userChats = await response.json();
+        setChats(userChats);
+        if (userChats.length > 0) {
+          setCurrentChatId(userChats[0].id);
+        } else {
+          // Si el usuario no tiene chats, no seleccionamos ninguno
+          setCurrentChatId(null);
+        }
+      } catch (error) {
+        console.error("Error fetching chats:", error);
+        // En caso de error, podríamos dejar los chats de ejemplo o mostrar un estado de error
+        setChats(exampleChats);
+      }
+    };
+
+    fetchChats();
+  }, [user]); // Se ejecuta cada vez que el objeto 'user' cambia
 
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'light';
@@ -83,26 +122,67 @@ function App() {
   const handleSelectChat = (chatId) => {
     setCurrentChatId(chatId);
   };
-  const handleNewChat = () => {
-    const newChatId = String(Date.now());
-    const newChat = {
-      id: newChatId,
-      title: 'Nuevo Chat ' + newChatId.substring(newChatId.length - 4),
-      messages: [],
-    };
-    setChats([...chats, newChat]);
-    setCurrentChatId(newChatId);
-    setIsSidebarExpanded(true);
-  };
-  const handleDeleteChat = (chatIdToDelete) => {
-    const updatedChats = chats.filter(chat => chat.id !== chatIdToDelete);
-    setChats(updatedChats);
-
-    if (currentChatId === chatIdToDelete || updatedChats.length === 0) {
-      setCurrentChatId(updatedChats.length > 0 ? updatedChats[0].id : null);
+  
+  const handleNewChat = async () => {
+    if (!user) {
+      alert("Por favor, inicia sesión para crear un nuevo chat.");
+      return;
     }
-    if (updatedChats.length === 0) {
+
+    const newChatTitle = 'Nuevo Chat ' + String(Date.now()).slice(-4);
+
+    try {
+      const response = await fetch('http://localhost:8000/chats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.uid,
+          email: user.email,
+          name: user.name,
+          title: newChatTitle,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Falló la creación del chat en el servidor');
+      }
+
+      const newChatFromDB = await response.json();
+      
+      setChats(prevChats => [newChatFromDB, ...prevChats]);
+      setCurrentChatId(newChatFromDB.id);
       setIsSidebarExpanded(true);
+
+    } catch (error) {
+      console.error("Error al crear el nuevo chat:", error);
+      alert(`Hubo un error al crear el chat: ${error.message}`);
+    }
+  };
+
+  const handleDeleteChat = async (chatIdToDelete) => {
+    try {
+        const response = await fetch(`http://localhost:8000/chats/${chatIdToDelete}`, {
+            method: 'DELETE',
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Falló el borrado del chat en el servidor');
+        }
+
+        const updatedChats = chats.filter(chat => chat.id !== chatIdToDelete);
+        setChats(updatedChats);
+
+        if (currentChatId === chatIdToDelete) {
+            setCurrentChatId(updatedChats.length > 0 ? updatedChats[0].id : null);
+        }
+
+    } catch (error) {
+        console.error("Error al borrar el chat:", error);
+        alert(`Hubo un error al borrar el chat: ${error.message}`);
     }
   };
 
@@ -111,26 +191,23 @@ function App() {
     if (!currentChatForSend) return;
 
     const newUserMessage = { text: messageText, sender: 'user' };
-    const updatedUserMessages = [...currentChatForSend.messages, newUserMessage];
 
-    setChats(prevChats =>
-      prevChats.map(chat =>
-        chat.id === currentChatId
-          ? { ...chat, messages: updatedUserMessages }
-          : chat
-      )
+    // Actualización optimista de la UI
+    const updatedChats = chats.map(chat =>
+      chat.id === currentChatId
+        ? { ...chat, messages: [...chat.messages, newUserMessage] }
+        : chat
     );
+    setChats(updatedChats);
 
     try {
       const response = await fetch('http://localhost:8000/ask', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: messageText,
-          chat_history: updatedUserMessages.map(msg => ({
-            role: msg.sender === 'user' ? 'user' : 'assistant',
+          chat_history: currentChatForSend.messages.map(msg => ({
+            role: msg.sender,
             content: msg.text,
           })),
         }),
@@ -141,35 +218,23 @@ function App() {
       }
 
       const data = await response.json();
-
       const newBotMessage = {
         text: data.answer || "No se recibió respuesta.",
         sender: 'bot',
         sources: data.retrieved_chunks || []
       };
 
+      // Actualizar el estado con la respuesta del bot
       setChats(prevChats =>
         prevChats.map(chat =>
           chat.id === currentChatId
-            ? { ...chat, messages: [...updatedUserMessages, newBotMessage] }
+            ? { ...chat, messages: [...chat.messages, newBotMessage] }
             : chat
         )
       );
     } catch (error) {
       console.error('Error al enviar mensaje:', error);
-      setChats(prevChats =>
-        prevChats.map(chat =>
-          chat.id === currentChatId
-            ? {
-                ...chat,
-                messages: [
-                  ...updatedUserMessages,
-                  { text: '❌ Hubo un error al obtener respuesta del servidor.', sender: 'bot', sources: [] },
-                ],
-              }
-            : chat
-        )
-      );
+      // Opcional: manejar el estado de error en la UI
     }
   };
 

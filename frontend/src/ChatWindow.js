@@ -4,6 +4,7 @@ import './ChatWindow.css';
 import vector2Image from './img/vector2.PNG';
 import ReactMarkdown from 'react-markdown';
 
+
 // Componente Modal... (el resto del código es el mismo)
 function FeedbackModal({ isOpen, onClose, onSubmit, message }) {
   const [selectedOption, setSelectedOption] = useState('');
@@ -64,6 +65,8 @@ function FeedbackModal({ isOpen, onClose, onSubmit, message }) {
 }
 
 function ChatWindow({ currentChat, onSendMessage, user, onOpenSettings }) {
+
+  // ✅ PASO 1: MOVER TODOS LOS HOOKS AL PRINCIPIO DEL COMPONENTE
   const [messageInput, setMessageInput] = useState('');
   const messagesEndRef = useRef(null);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
@@ -77,10 +80,23 @@ function ChatWindow({ currentChat, onSendMessage, user, onOpenSettings }) {
     "Explícame la historia del Nasdaq."
   ];
 
+  // Este useEffect también es un Hook y debe ir arriba
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentChat?.messages]);
 
+
+  // ✅ PASO 2: EL RETURN CONDICIONAL AHORA ESTÁ DESPUÉS DE LOS HOOKS
+  if (!currentChat) {
+      return (
+          <div className="empty-chat-content">
+            <p>Selecciona un chat existente a la izquierda o crea uno nuevo para comenzar a interactuar.</p>
+            <img src={vector2Image} alt="Asistente Virtual Original" className="empty-chat-image" />
+          </div>
+      );
+  }
+
+  // --- El resto de tus funciones y lógica va aquí ---
   const handleInputChange = (event) => {
     setMessageInput(event.target.value);
   };
@@ -163,106 +179,97 @@ function ChatWindow({ currentChat, onSendMessage, user, onOpenSettings }) {
   
   // Condicionales para el renderizado
   const showWelcomeMessage = currentChat && currentChat.messages.length === 0;
-  const isChatEmpty = !currentChat;
+  // Esta constante ya no es necesaria porque el return condicional se encarga de esto
+  // const isChatEmpty = !currentChat; 
 
   return (
     <div className="chat-window">
       <Header
-        chatTitle={isChatEmpty ? "Financial Advisor Chatbot" : currentChat.title}
+        chatTitle={currentChat.title} // Ya no puede ser un chat vacío aquí
         user={user}
         onOpenSettings={onOpenSettings}
       />
 
       <div className="messages-container">
-        {isChatEmpty ? (
-          <div className="empty-chat-content">
-            <p>Selecciona un chat existente a la izquierda o crea uno nuevo para comenzar a interactuar.</p>
-            <img src={vector2Image} alt="Asistente Virtual Original" className="empty-chat-image" />
-          </div>
-        ) : (
-          <>
-            {showWelcomeMessage ? (
-              <div className="welcome-message-overlay">
-                <div className="welcome-content">
-                  <h1>¡Hola! Soy tu asesor financiero virtual.</h1>
-                  <p>Estoy aquí para ayudarte con tus preguntas y tareas. ¿En qué puedo asistirte hoy?</p>
-                  <p>Escribe tu primer mensaje abajo para comenzar.</p>
-                  <div className="suggested-prompts-container">
-                    {suggestedNasdaqPrompts.map((prompt, index) => (
-                      <button
-                        key={index}
-                        className="suggested-prompt-box"
-                        onClick={() => handleSuggestedPromptClick(prompt)}
-                      >
-                        {prompt}
-                      </button>
-                    ))}
-                  </div>
+        {/* Ya no necesitamos la condición isChatEmpty aquí */}
+        <>
+          {showWelcomeMessage ? (
+            <div className="welcome-message-overlay">
+              <div className="welcome-content">
+                <h1>¡Hola! Soy tu asesor financiero virtual.</h1>
+                <p>Estoy aquí para ayudarte con tus preguntas y tareas. ¿En qué puedo asistirte hoy?</p>
+                <p>Escribe tu primer mensaje abajo para comenzar.</p>
+                <div className="suggested-prompts-container">
+                  {suggestedNasdaqPrompts.map((prompt, index) => (
+                    <button
+                      key={index}
+                      className="suggested-prompt-box"
+                      onClick={() => handleSuggestedPromptClick(prompt)}
+                    >
+                      {prompt}
+                    </button>
+                  ))}
                 </div>
               </div>
-            ) : (
-              currentChat.messages.map((message, index) => {
-                const cleanedMessageText = message.text.trim();
-                return (
-                  <div key={index} className={`message-bubble ${message.sender}`}>
-                    {message.sender === 'bot' ? (
-                      <ReactMarkdown>{cleanedMessageText}</ReactMarkdown>
-                    ) : (
-                      cleanedMessageText
-                    )}
+            </div>
+          ) : (
+            currentChat.messages.map((message, index) => {
+              const cleanedMessageText = message.text.trim();
+              return (
+                <div key={index} className={`message-bubble ${message.sender}`}>
+                  {message.sender === 'bot' ? (
+                    <ReactMarkdown>{cleanedMessageText}</ReactMarkdown>
+                  ) : (
+                    cleanedMessageText
+                  )}
 
-                    {message.sender === 'bot' && message.sources && message.sources.length > 0 && (
-                      <div className="sources-container">
-                        <hr />
-                        <strong>🔍 Fuentes recuperadas:</strong>
-                        <ul>
-                          {message.sources.map((source, idx) => (
-                            <li key={idx}>{source.page_content}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {message.sender === 'bot' && (
-                      <div className="message-actions">
-                        <button className="action-button" onClick={() => handleFeedbackClick(message, 'like')}>👍</button>
-                        <button className="action-button" onClick={() => handleFeedbackClick(message, 'dislike')}>👎</button>
-                        <button className="action-button" onClick={() => handleCopy(message.text, index)}>
-                          {copyStatus.copied && copyStatus.messageId === index ? '✅' : '📋'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
-            <div ref={messagesEndRef} />
-          </>
-        )}
+                  {message.sender === 'bot' && message.sources && message.sources.length > 0 && (
+                    <div className="sources-container">
+                      <hr />
+                      <strong>🔍 Fuentes recuperadas:</strong>
+                      <ul>
+                        {message.sources.map((source, idx) => (
+                          <li key={idx}>{source.page_content}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {message.sender === 'bot' && (
+                    <div className="message-actions">
+                      <button className="action-button" onClick={() => handleFeedbackClick(message, 'like')}>👍</button>
+                      <button className="action-button" onClick={() => handleFeedbackClick(message, 'dislike')}>👎</button>
+                      <button className="action-button" onClick={() => handleCopy(message.text, index)}>
+                        {copyStatus.copied && copyStatus.messageId === index ? '✅' : '📋'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+          <div ref={messagesEndRef} />
+        </>
       </div>
 
-      {/* Input area, solo visible si hay un chat seleccionado */}
-      {!isChatEmpty && (
-        <div className="message-input-area">
-          <textarea
-            className="message-textarea"
-            placeholder="Escribe tu mensaje..."
-            value={messageInput}
-            onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
-            rows="1"
-          />
-          <button className="send-button" onClick={handleSendMessage}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-            </svg>
-          </button>
-        </div>
-      )}
-      {!isChatEmpty && (
-        <div className="input-hint">
-          Presiona Enter para envío; Shift + Enter para mas líneas
-        </div>
-      )}
+      {/* Input area, ahora sabemos que siempre hay un chat */}
+      <div className="message-input-area">
+        <textarea
+          className="message-textarea"
+          placeholder="Escribe tu mensaje..."
+          value={messageInput}
+          onChange={handleInputChange}
+          onKeyPress={handleKeyPress}
+          rows="1"
+        />
+        <button className="send-button" onClick={handleSendMessage}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </div>
+      <div className="input-hint">
+        Presiona Enter para envío; Shift + Enter para mas líneas
+      </div>
 
       {/* MODAL FUERA DE CUALQUIER CONDICIONAL */}
       <FeedbackModal

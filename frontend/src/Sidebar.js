@@ -58,7 +58,7 @@ function Sidebar({
         <>
           {!user && (
             <div className="login-buttons-container">
-              <Login />
+              <Login setUser={setUser} />
             </div>
           )}
           <div className="new-chat-button-container">
