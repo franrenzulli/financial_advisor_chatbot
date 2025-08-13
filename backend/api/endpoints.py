@@ -1,26 +1,86 @@
 # /app/api/endpoints.py
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
 import json
+import sqlite3
+import os
+import time
+from datetime import datetime
 
+# --- TUS IMPORTS ACTUALES ---
 from rag.retriever import retrieve_chunks
 from llm.router import route_question
 from llm.evaluator import are_chunks_sufficient
 from llm.generator import generate_rag_answer, generate_fallback_answer, handle_conversational_and_calculations
 from external_apis.financial_data import get_stock_quote, get_exchange_rate
 from llm.extractor import extract_financial_info
-from external_apis.news_api import get_financial_news # ¡Nueva importación!
-from llm.generator import generate_news_summary # ¡Nueva importación!
-
-
+from external_apis.news_api import get_financial_news
+from llm.generator import generate_news_summary
 from feedback.database import get_db, FeedbackLog
+
+# --- LÓGICA PARA CREAR LA BASE DE DATOS DE CHATS AL ARRANCAR ---
+try:
+    # 1. Definir la ruta a la carpeta y al archivo de la base de datos
+    api_dir = os.path.dirname(os.path.abspath(__file__))
+    app_dir = os.path.dirname(api_dir)
+    db_folder_path = os.path.join(app_dir, 'chats')
+    db_file_path = os.path.join(db_folder_path, 'chats.sqlite')
+
+    # 2. Crear la carpeta si no existe
+    os.makedirs(db_folder_path, exist_ok=True)
+
+    # 3. Función para obtener una conexión a la DB de chats
+    def get_chats_db_conn():
+        conn = sqlite3.connect(db_file_path)
+        conn.row_factory = sqlite3.Row 
+        return conn
+
+    # 4. Conectar y crear tablas si no existen
+    conn = get_chats_db_conn()
+    cursor = conn.cursor()
+    print("✅ Conectado a la base de datos SQLite para chats.")
+    print(f"   Ruta: {db_file_path}")
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY, email TEXT UNIQUE, name TEXT
+    )''')
+    print("   - Tabla 'users' lista.")
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS chats (
+      id TEXT PRIMARY KEY, user_id TEXT NOT NULL, title TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users (id)
+    )''')
+    print("   - Tabla 'chats' lista.")
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL,
+      role TEXT NOT NULL, content TEXT NOT NULL,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (chat_id) REFERENCES chats (id)
+    )''')
+    print("   - Tabla 'messages' lista.")
+
+    conn.commit()
+    conn.close()
+    print("✅ Base de datos de chats verificada y lista.")
+
+except sqlite3.Error as e:
+    print(f"❌ Error en la base de datos de chats: {e}")
+
+print("-" * 50)
+# --- FIN DE LA LÓGICA DE INICIALIZACIÓN ---
+
 
 router = APIRouter()
 
-# --- MODELOS ---
+# --- MODELOS Pydantic ---
 class QuestionRequest(BaseModel):
     question: str
     chat_history: Optional[List[Dict[str, str]]] = None
@@ -33,7 +93,112 @@ class FeedbackPayload(BaseModel):
     feedback_details: Optional[str] = None
     retrieved_chunks: Optional[list] = []
 
-# --- ENDPOINT /ask (CON LÓGICA COMPLETA) ---
+class ChatCreateRequest(BaseModel):
+    userId: str
+    email: Optional[str] = None
+    name: Optional[str] = None
+    title: str
+
+# --- ENDPOINTS ---
+
+# ✅ NUEVO ENDPOINT PARA OBTENER LOS CHATS DE UN USUARIO
+@router.get("/chats/{user_id}")
+def get_user_chats(user_id: str):
+    conn = None
+    try:
+        conn = get_chats_db_conn()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT id, title, created_at FROM chats WHERE user_id = ? ORDER BY created_at DESC",
+            (user_id,)
+        )
+        
+        chats_from_db = cursor.fetchall()
+        
+        # Convertimos las filas de la DB a una lista de diccionarios
+        # y agregamos el array de mensajes vacío que el frontend necesita
+        chats = [
+            {
+                "id": row["id"],
+                "title": row["title"],
+                "created_at": row["created_at"],
+                "messages": [] 
+            } 
+            for row in chats_from_db
+        ]
+        
+        return chats
+
+    except sqlite3.Error as e:
+        print(f"ERROR al obtener chats: {e}")
+        raise HTTPException(status_code=500, detail="Error de base de datos al obtener los chats")
+    finally:
+        if conn:
+            conn.close()
+
+@router.post("/chats", status_code=status.HTTP_201_CREATED)
+def create_chat(chat_request: ChatCreateRequest):
+    chat_id = str(int(time.time() * 1000))
+    conn = None
+    try:
+        conn = get_chats_db_conn()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "INSERT INTO users (id, email, name) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET email=excluded.email, name=excluded.name",
+            (chat_request.userId, chat_request.email, chat_request.name)
+        )
+
+        cursor.execute(
+            "INSERT INTO chats (id, user_id, title) VALUES (?, ?, ?)",
+            (chat_id, chat_request.userId, chat_request.title)
+        )
+        conn.commit()
+
+        new_chat = {
+            "id": chat_id,
+            "user_id": chat_request.userId,
+            "title": chat_request.title,
+            "created_at": datetime.utcnow().isoformat(),
+            "messages": [] # Se lo devolvemos al frontend para que no crashee
+        }
+        print(f"Chat creado: {new_chat}")
+        return new_chat
+
+    except sqlite3.Error as e:
+        print(f"ERROR al crear chat: {e}")
+        raise HTTPException(status_code=500, detail="Error de base de datos al crear el chat")
+    finally:
+        if conn:
+            conn.close()
+
+@router.delete("/chats/{chat_id}", status_code=status.HTTP_200_OK)
+def delete_chat(chat_id: str):
+    conn = None
+    try:
+        conn = get_chats_db_conn()
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM messages WHERE chat_id = ?", (chat_id,))
+        cursor.execute("DELETE FROM chats WHERE id = ?", (chat_id,))
+        conn.commit()
+
+        if cursor.rowcount == 0:
+             raise HTTPException(status_code=404, detail="Chat no encontrado")
+
+        print(f"Chat borrado: {chat_id}")
+        return {"message": "Chat y mensajes asociados borrados exitosamente"}
+
+    except sqlite3.Error as e:
+        print(f"ERROR al borrar chat: {e}")
+        raise HTTPException(status_code=500, detail="Error de base de datos al borrar el chat")
+    finally:
+        if conn:
+            conn.close()
+
+
+# --- ENDPOINT /ask (TU LÓGICA ACTUAL) ---
 @router.post("/ask")
 async def ask(request: QuestionRequest):
     try:
@@ -59,15 +224,13 @@ async def ask(request: QuestionRequest):
                     bot_answer = generate_fallback_answer(request.question, request.chat_history)
             
             elif sub_route == "API_COTIZACION":
-                # Lógica para extraer el símbolo de la acción de la pregunta
-                # Por simplicidad, usaremos un mock. En un caso real, esto sería un LLM.
                 stock_symbol, _, _ = extract_financial_info(request.question, sub_route)
                 if stock_symbol:
                     bot_answer = get_stock_quote(stock_symbol)
                 else:
                     bot_answer = "No pude identificar el símbolo de la acción en tu pregunta. Por favor, sé más específico."
 
-            elif sub_route == "NOTICIAS": # ¡Nueva ruta!
+            elif sub_route == "NOTICIAS":
                 entity, _, _ = extract_financial_info(request.question, sub_route)
                 if entity:
                     news_articles = get_financial_news(entity)
@@ -97,7 +260,7 @@ async def ask(request: QuestionRequest):
         print(f"ERROR CRÍTICO EN EL ENDPOINT /ask: {e}")
         raise HTTPException(status_code=500, detail=f"Error inesperado en el backend: {e}")
 
-# --- ENDPOINT /feedback se mantiene igual ---
+# --- ENDPOINT /feedback (TU LÓGICA ACTUAL) ---
 @router.post("/feedback")
 async def handle_feedback(payload: FeedbackPayload, db: Session = Depends(get_db)):
     try:
